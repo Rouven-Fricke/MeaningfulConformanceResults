@@ -33,7 +33,7 @@ public class DeviationSet {
 	
 	
 	public static void createDevDistr(DeviationSet[] ds) {
-		//first: construct a list of all deviations across all deviation set in the DeviationSet[] array
+		//first: construct a list of all deviations across all deviation sets in the DeviationSet[] array
 		List<String> compList = new ArrayList<String>();
 		
 		//fill the list with all deviations
@@ -62,6 +62,59 @@ public class DeviationSet {
 	
 	public List<String> getDevList(){
 		return this.deviatingCompNames;
+	}
+	
+	
+	public Map<String, Integer> getNumberedCoOccurrences(String originalComp, Map<String, Integer> hm){
+		if(this.getDevList().contains(originalComp)) {
+			for(String i : this.getDevList()) {
+				if(!i.equals(originalComp)) {
+					Integer j = hm.get(i); 
+		            hm.put(i, (j == null) ? 1 : j + 1); 
+				}else if(i.equals(originalComp)){
+					hm.put(i, 0);
+				}
+			}
+		}
+		return hm;
+	}
+	
+	public static void constructConnectivityMetric(DeviationSet[] ds, int traceNo) {
+		HashMap<String, Double> connectivityOfComp = new HashMap<String, Double>();
+		List<String> deviatingComps = new ArrayList<String>();
+		//get a list of all unique deviating comps for a trace to get the connectivity of each one of them.
+		for(DeviationSet devSet : ds) {
+			for(String str : devSet.deviatingCompNames) {
+				if(!deviatingComps.contains(str)) {
+					deviatingComps.add(str);
+				}
+			}
+		}
+		
+		//compute connectivity for each comp
+		for(String singleComponent : deviatingComps) {
+			double deviationsOfComp = 0.0;
+			Map<String, Integer> hm = new HashMap<String, Integer>();
+			for(DeviationSet devSet : ds) {
+				devSet.getNumberedCoOccurrences(singleComponent, hm);
+				if(devSet.deviatingCompNames.contains(singleComponent)) {//will only work if a fragment is false at most 1 time per trace
+					deviationsOfComp++;
+				}
+		
+			}
+			double noOfCoOccurringComponents = 0.0;
+			for(Map.Entry<String, Integer> val : hm.entrySet()) {
+				if(val.getKey() != singleComponent) {
+					noOfCoOccurringComponents++;
+				}
+			}
+			double connectivity = noOfCoOccurringComponents / deviationsOfComp;
+			connectivityOfComp.put(singleComponent, connectivity);
+		}
+		for(Map.Entry<String, Double> entry : connectivityOfComp.entrySet()) {
+			System.out.println("Component: " + entry.getKey() + " Connectivity: " + entry.getValue());
+		}
+		
 	}
 	
 	public String toString() {
