@@ -141,9 +141,9 @@ public class RouvensPlaygroundPlugin {
 			XLog tbsLog = tbs.translationsAsLog(log);
 			double traceFitness = 0.0;
 			for (XTrace interpretation : tbsLog) {
-				double intFit = computeTraceFitness(replayer, logAttributes, interpretation);
+				//double intFit = computeTraceFitness(replayer, logAttributes, interpretation);
 				// for now just calculate traceFitness as the average fitness value per interpretation, no probabilities considered
-				traceFitness = traceFitness + intFit / (tbsLog.size()/4);
+				//traceFitness = traceFitness + intFit / (tbsLog.size()/4);
 			}
 			if(i % 50 == 0) {
 				System.out.println(i + " Traces done");
@@ -160,16 +160,17 @@ public class RouvensPlaygroundPlugin {
 			}
 		}*/
 		//compPlugin.printAmbiguousNonCompliantComps();
-		System.out.println();
+		
 		//compPlugin.printUnambiguousNonCompliantComps();
 		//compPlugin.printDeviationSets();
 		
 		DeviationSet ds[] = new DeviationSet[etams.size()];
 		for(int i = 0; i< etams.size();i++) {
-			ds[i] = compPlugin.getSingleDevSet(5500, i);
+			ds[i] = compPlugin.getSingleDevSet(5500, i);//TODO: impelement a method getDevSets(traceNo) 
 			System.out.println(compPlugin.getSingleDevSet(5500, i).toString());
 		}
 		compPlugin.constructDeviationMatrix(ds, 5500).showDeviationMatrix();
+		DeviationSet.constructConnectivityMetric(ds, 5500);
 		//DeviationSet.createDevDistr(ds);
 		System.out.println("\nUnique Ambiguous non-compliant Components: "+ compPlugin.getUniqueAmbigComps());
 		System.out.println("\n Unique Unambiguous non-compliant Components: " + compPlugin.getUniqueUnambigComps());
