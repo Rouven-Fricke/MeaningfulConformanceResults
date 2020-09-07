@@ -3,6 +3,7 @@ package org.processmining.behavioralspaces.plugins;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -10,6 +11,7 @@ import java.util.List;
 import java.util.ListIterator;
 import java.util.Map;
 import java.util.Set;
+import java.util.TreeMap;
 
 import org.apache.commons.collections.ListUtils;
 import org.deckfour.xes.classification.XEventClass;
@@ -88,8 +90,7 @@ public class UncertainComplianceCheckAlignmentBasedPlugin {
 	
 	private List<HashMap<Integer, List<HashMap<Integer, String>>>> devList = new ArrayList<HashMap<Integer, List<HashMap<Integer, String>>>>();
 	private List<Integer> deviatingTraces = new ArrayList<Integer>();
-	//private HashMap<Integer, HashMap<Integer,String>> allUnambig = new HashMap<Integer, HashMap<Integer,String>>();
-	//private HashMap<Integer, HashMap<Integer,String>> allAmbig = new HashMap<Integer, HashMap<Integer,String>>();
+	
 	private int traceNumber = 0;
 	private List<String> listU = new ArrayList<String>();
 	private List<String> listA = new ArrayList<String>();
@@ -305,8 +306,7 @@ public class UncertainComplianceCheckAlignmentBasedPlugin {
 		List<HashMap<Integer, String>> uHashMapList = new ArrayList<HashMap<Integer, String>>();
 		List<HashMap<Integer, String>> totalDevsMapList = new ArrayList<HashMap<Integer, String>>();
 		
-		//HashMap<Integer, String> nonCompUnambig = new HashMap<Integer,String>();
-		//HashMap<Integer, String> nonCompAmbig = new HashMap<Integer, String>();
+
 		
 		XLogInfo logInfo = XLogInfoFactory.createLogInfo(log, classifierMap);
 		XLog tempLog = XLogHelper.initializeLog(log);
@@ -493,7 +493,6 @@ public class UncertainComplianceCheckAlignmentBasedPlugin {
 							
 						}
 						if(!compl) {
-							//System.out.println("Ambig. Component: " + compName + " Compliant?: "+ compl + " for Translation No. " + k);
 							System.out.println("Ambig: Trace No. "+ traceNumber + "Translation No: " + aTransNo + ", CompName: " + compName + " Compl: " + compl);
 							HashMap<Integer, String> nonCompAmbig = new HashMap<Integer, String>();
 							
@@ -553,7 +552,7 @@ public void printUnambiguousNonCompliantComps() {
 	}
 }
 
-//Delete restricting if stmts.
+
 public void printDeviationSets() {
 	for(HashMap<Integer, List<HashMap<Integer, String>>> devSet : devList) {
 		for(Map.Entry<Integer, List<HashMap<Integer, String>>> entry : devSet.entrySet()) {
@@ -591,7 +590,7 @@ private List<String> getDeviatingCompsOfTrace(int traceNo) {
 		}
 
 	}
-	System.out.println("Deviating Comps for Trace: " + traceNo + ": " + deviatingComps);
+	//System.out.println("Deviating Comps for Trace: " + traceNo + ": " + deviatingComps);
 	return deviatingComps;
 }
 
@@ -599,23 +598,19 @@ private List<String> getDeviatingCompsOfTrace(int traceNo) {
 //ggf. also add the trace number as additional input for the method!
 public DeviationMatrix constructDeviationMatrix(DeviationSet[] ds, int traceNo) {
 	List<String> deviatingComps = this.getDeviatingCompsOfTrace(traceNo);
+	java.util.Collections.sort(deviatingComps);
 	String[][] matrixEntries =  new String[getDeviatingCompsOfTrace(traceNo).size()+1][getDeviatingCompsOfTrace(traceNo).size()+1];
 	matrixEntries[0][0] = "Components";
-	boolean topRowFilled = false;
-	int k = 1;
-	/*for(String str : ds[0].getDevList()) {
-		System.out.println(str + "STR");
-		matrixEntries[0][k] = str;
-		k++;
-	}*/
+	boolean topRowFilled = false; //used to label the columns with the component names.
+	
 	int ithComp = 1;
 	for(String singleComponent : deviatingComps) {
 		Map<String, Integer> hm = new HashMap<String, Integer>();//Elements and their frequency of co-occurrence across all devSets
 		
+		//save the co-occurring deviating comps and their frequency of occurrence.
+		// hashmap to store the frequency of element 
 		for(DeviationSet devSet : ds) {
-			if(devSet.getDevList().contains(singleComponent)) {
-				//save the co-occurring deviating comps and their frequency of occurrence.
-				// hashmap to store the frequency of element 
+			/*if(devSet.getDevList().contains(singleComponent)) {
 				for(String i : devSet.getDevList()) {
 					if(!i.equals(singleComponent)) {
 						Integer j = hm.get(i); 
@@ -625,20 +620,22 @@ public DeviationMatrix constructDeviationMatrix(DeviationSet[] ds, int traceNo) 
 					}
 					
 				}
-			}
+			}*/
+			devSet.getNumberedCoOccurrences(singleComponent, hm);
 			
 		}
 		System.out.print("Element " + singleComponent + " co-occurs: ");
 		int jthComp = 1;
 		matrixEntries[ithComp][0] = singleComponent;
 		int counter = 1;
-		for (Map.Entry<String, Integer> val : hm.entrySet()) {
-			if(!topRowFilled) {
+		TreeMap<String, Integer> sortedMap = sortbykey(hm); //sort both lists lexicographically to have a 0-diagonal matrix.
+		for(Map.Entry<String, Integer> val : sortedMap.entrySet()) {
+		//for (Map.Entry<String, Integer> val : hm.entrySet()) {
+			if(!topRowFilled) {//fill out the first row with the non-compl component names
 				matrixEntries[0][counter] = val.getKey();
 			}
 			//plus also fill the deviation matrix
 			System.out.print(val.getValue() + " times with " + val.getKey() + ", ");
-			
 			//fill matrix
 			matrixEntries[ithComp][jthComp] = Integer.toString(val.getValue());
 			jthComp++;
@@ -651,6 +648,7 @@ public DeviationMatrix constructDeviationMatrix(DeviationSet[] ds, int traceNo) 
 	}
 	return new DeviationMatrix(matrixEntries);
 }
+
 
 
 //maybe two methods, construct devset and getDevSet... and call construct() from getter.
@@ -725,6 +723,21 @@ private Set<String> getChildComponents(DCDecomposition decomp, String compName, 
 	return names;
 }
 
+
+//Function to sort map by Key 
+private TreeMap<String, Integer> sortbykey(Map<String, Integer> map) { 
+ // TreeMap to store values of HashMap 
+ TreeMap<String, Integer> sorted = new TreeMap<>(); 
+
+ // Copy all data from hashMap into TreeMap 
+ sorted.putAll(map); 
+
+ // Display the TreeMap which is naturally sorted 
+ /*for (Map.Entry<String, Integer> entry : sorted.entrySet())  
+     System.out.println("Key = " + entry.getKey() +  
+                  ", Value = " + entry.getValue());    */     
+ return sorted;
+} 
 	
 
 	
