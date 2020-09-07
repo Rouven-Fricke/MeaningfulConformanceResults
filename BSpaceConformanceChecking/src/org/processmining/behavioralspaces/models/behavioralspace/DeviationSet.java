@@ -109,6 +109,7 @@ public class DeviationSet {
 				}
 			}
 			double connectivity = noOfCoOccurringComponents / deviationsOfComp;
+			System.out.println("Single Component: " + singleComponent + " " + noOfCoOccurringComponents + " " + deviationsOfComp);
 			connectivityOfComp.put(singleComponent, connectivity);
 		}
 		for(Map.Entry<String, Double> entry : connectivityOfComp.entrySet()) {
