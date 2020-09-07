@@ -1,0 +1,6 @@
+package org.processmining.behavioralspaces.evaluation;
+
+public enum ErrorType {
+	NONE, NO_LOG, DEADLOCK, SINGLETRACE, LOOPS, NOETAMSOLUTION, SINGLESOLUTION, NOISE_INSTERTION_PROBLEM, ALIGNMENT_PROBLEM, GC_OOM_ERROR
+	}
+
