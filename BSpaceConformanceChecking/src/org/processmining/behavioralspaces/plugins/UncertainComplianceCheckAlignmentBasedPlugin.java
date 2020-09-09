@@ -82,18 +82,19 @@ public class UncertainComplianceCheckAlignmentBasedPlugin {
 	private XEventClassifier eventClassifier = XLogInfoImpl.NAME_CLASSIFIER;
 	private XEventClasses classes;
 	
-	
+	//Stores the List of the HashMaps on the translation level and their non-compl components.
+	//allUnambig/ambig/devSet are store Trace level information.
 	private HashMap<Integer, List<HashMap<Integer, String>>> allUnambig = new HashMap<Integer, List<HashMap<Integer, String>>>();
 	private HashMap<Integer, List<HashMap<Integer, String>>> allAmbig = new HashMap<Integer, List<HashMap<Integer, String>>>();
-	//check, if devSet is needed somewhere???
+
 	private HashMap<Integer, List<HashMap<Integer, String>>> devSet = new HashMap<Integer, List<HashMap<Integer, String>>>(); 
 	
 	private List<HashMap<Integer, List<HashMap<Integer, String>>>> devList = new ArrayList<HashMap<Integer, List<HashMap<Integer, String>>>>();
 	private List<Integer> deviatingTraces = new ArrayList<Integer>();
 	
 	private int traceNumber = 0;
-	private List<String> listU = new ArrayList<String>();
-	private List<String> listA = new ArrayList<String>();
+	private List<String> listU = new ArrayList<String>();//list of unique unambiguous components
+	private List<String> listA = new ArrayList<String>();// list of unique ambiguous components
 	
 	public enum ExecMode {
 		NAIVE, EFFICIENT
@@ -301,7 +302,9 @@ public class UncertainComplianceCheckAlignmentBasedPlugin {
 
 	private boolean checkConformance(PluginContext context, TraceBSpace bspace, Set<String> ambiguousComponents, Set<String> unambiguousComponents, ExecMode mode) {
 		
-		//Lists that store the different hashMaps to allow for the same translation to have multiple !compl components.
+		//Lists that store the different hashMaps to allow for the same translation to have multiple non-compl components.
+		//Each HashMap stores one translation number and a non compl. component
+		//Translation level
 		List<HashMap<Integer, String>> aHashMapList = new ArrayList<HashMap<Integer, String>>();
 		List<HashMap<Integer, String>> uHashMapList = new ArrayList<HashMap<Integer, String>>();
 		List<HashMap<Integer, String>> totalDevsMapList = new ArrayList<HashMap<Integer, String>>();
@@ -320,7 +323,7 @@ public class UncertainComplianceCheckAlignmentBasedPlugin {
 		
 		
 		//Unambiguous components
-		int compIt = 0;
+
 		int unambigComps = 0;
 		for (String compName : unambiguousComponents) {
 			//System.out.println("Unambiguous CompName: " + compName);
@@ -361,7 +364,7 @@ public class UncertainComplianceCheckAlignmentBasedPlugin {
 					if(fit < 1) {
 						//System.out.println(res.getInfo().get(PNRepResult.TRACEFITNESS) + " " + compName + " " + components.getComponent(compName).getTrans() + " " + compl);
 						if(!listU.contains(compName)) {
-							listU.add(compName);
+							listU.add(compName);//we only store the unique unambiguous comps in this list.
 						}
 					}
 
@@ -378,27 +381,30 @@ public class UncertainComplianceCheckAlignmentBasedPlugin {
 			for (XTraceTranslation tt : bspace.getTranslations()) { //set the compliance of all translations according to the
 			//first one as it is an unambiguous component.
 			//XTraceTranslation tt = bspace.getTranslations().iterator().next();	
-				//System.out.print("Unambig: Trace No. " + i + ": ");
-				if(compIt == 0) {
-					/*for(XEvent e : tt.getOriginal()) {
-						System.out.print(classes.getClassOf(e)+ ", ");
-					}*/
+				/*if(this.traceNumber == 5500 && uTransNo == 1) {
+					System.out.print("Unambig: Trace No. " + this.traceNumber + ", ");
+					for(XEvent e : tt.getOriginal()) {
+						System.out.print(classes.getClassOf(e)+ ", ");	
+					}
 					System.out.println();
+				}*/
 					for(int l = 0;l<tt.getMapping().size();l++) {
 						//System.out.println(l + ". Mapping EventList: " + tt.getMapping().get(l) + " - " + tt.getMapping().getActivities());
 					}
-				}
+				
 				
 			
 				tt.setComponentCompliance(compName, compl);
 				if(!compl) {
 					boolean unambigCompIsNonCompl = true;
 					unambigComps++;
-					System.out.println("Unambig: Trace No. "+ traceNumber + ", CompName: " + compName + " Compl: " + compl);
-					HashMap<Integer, String> nonCompUnambig = new HashMap<Integer,String>();
+					if(uTransNo == 0 && this.traceNumber == 5500) {//only print once, as its the same for all transl.
+						System.out.println("Unambig: Trace No. "+ traceNumber + ", CompName: " + compName + " Compl: " + compl);
+					}
 					
-					nonCompUnambig.put(uTransNo, compName);//why are unambiguous noncompliant components across traces always the same, including the same transition??
-					uHashMapList.add(nonCompUnambig);
+					HashMap<Integer, String> nonCompUnambig = new HashMap<Integer,String>();
+					nonCompUnambig.put(uTransNo, compName);//create a new HashMap for the noncompliant component and the translation number
+					uHashMapList.add(nonCompUnambig);//always create a new HashMap per translation and add it to the List to allow for multiple non-compl components for the same translation
 					totalDevsMapList.add(nonCompUnambig);
 					if(!deviatingTraces.contains(this.traceNumber)) {
 						deviatingTraces.add(this.traceNumber);
@@ -407,11 +413,10 @@ public class UncertainComplianceCheckAlignmentBasedPlugin {
 					
 				}
 			
-				compIt++;
 				uTransNo++;
 			}
-			this.allUnambig.put(this.traceNumber, uHashMapList);
-			this.devSet.put(this.traceNumber, uHashMapList);
+			this.allUnambig.put(this.traceNumber, uHashMapList);//two HashMaps to be able to output only unabmiguous/ambiguous and
+			this.devSet.put(this.traceNumber, uHashMapList);//all non-compliant components together.
 		}
 		devList.add(allUnambig);
 
@@ -475,7 +480,7 @@ public class UncertainComplianceCheckAlignmentBasedPlugin {
 							compl = (fit >= 1.0);
 							if(fit < 1) {
 								if(!listA.contains(compName)) {
-									listA.add(compName);
+									listA.add(compName); //get unique ambiguous noncompl comps.
 								}
 							}
 							
@@ -485,27 +490,29 @@ public class UncertainComplianceCheckAlignmentBasedPlugin {
 						}
 						tt.setComponentCompliance(compName, compl);
 						
-						if(aTransNo == 0) {
-							//System.out.print("Ambig: Trace No. " + j + ", ");
-							for(XEvent e : tt.getOriginal()) {
-								//System.out.print(classes.getClassOf(e)+ ", ");	
+						/*if(this.traceNumber == 5500) {
+							System.out.print("Ambig: Trace No. " + this.traceNumber + "Translation No. " + aTransNo + ", ");
+							for(XEvent e : tt.getOriginal()) {//getOriginal always gives the same trace?
+								System.out.print(classes.getClassOf(e)+ ", ");	
+							}
+							System.out.println();
+						}*/
+						if(!compl) {
+							if(this.traceNumber == 5500) {
+								System.out.println("Ambig: Trace No. "+ traceNumber + "Translation No: " + aTransNo + ", CompName: " + compName + " Compl: " + compl);
 							}
 							
-						}
-						if(!compl) {
-							System.out.println("Ambig: Trace No. "+ traceNumber + "Translation No: " + aTransNo + ", CompName: " + compName + " Compl: " + compl);
 							HashMap<Integer, String> nonCompAmbig = new HashMap<Integer, String>();
-							
 							nonCompAmbig.put(aTransNo, compName);
 							aHashMapList.add(nonCompAmbig);
 							totalDevsMapList.add(nonCompAmbig);
 							
 							if(!deviatingTraces.contains(this.traceNumber)) {
-								deviatingTraces.add(this.traceNumber);
+								deviatingTraces.add(this.traceNumber);//get the numbers of the traces with fitness problems
 							}
 						}
 						
-						aTransNo++;
+						
 						if (compl) {
 							seenCompl = true;
 						} else {
@@ -523,6 +530,7 @@ public class UncertainComplianceCheckAlignmentBasedPlugin {
 						
 					}
 				}
+				aTransNo++;
 			}
 			//System.out.println("Total translations: " + bspace.getTranslations().size());
 			this.allAmbig.put(this.traceNumber, aHashMapList);
@@ -552,13 +560,28 @@ public void printUnambiguousNonCompliantComps() {
 	}
 }
 
+public void printAmbiguousNonCompliantComps() {
+	for(Map.Entry<Integer, List<HashMap<Integer, String>>> ambigNonComp : this.allAmbig.entrySet()) {
+		int traceNo = ambigNonComp.getKey();
+		List<HashMap<Integer, String>> traceLevelAmbigNonComp = ambigNonComp.getValue();
+		for(int i = 0;i<traceLevelAmbigNonComp.size();i++) {
+			boolean onlyFirstTranslation = true;
+			for(Map.Entry<Integer, String> translationEntry : traceLevelAmbigNonComp.get(i).entrySet()) {
+				int translationNo = translationEntry.getKey();
+				String comp = translationEntry.getValue();
+				System.out.println("TraceNo: " + traceNo + " Translation No: " + translationNo + " Non compliant Ambig Comp: " + comp /*+ "-> " + components.getComponent(comp).getTrans()*/);
+			}
+		}
+	}
+	
+}
 
 public void printDeviationSets() {
-	for(HashMap<Integer, List<HashMap<Integer, String>>> devSet : devList) {
-		for(Map.Entry<Integer, List<HashMap<Integer, String>>> entry : devSet.entrySet()) {
+	for(HashMap<Integer, List<HashMap<Integer, String>>> devSet : devList) {//HashMap allUnambig and HashMap allAmbig
+		for(Map.Entry<Integer, List<HashMap<Integer, String>>> entry : devSet.entrySet()) {//iterate through entries of each HMap
 			int traceNo = entry.getKey();
-				for(HashMap<Integer, String> translList : entry.getValue()) {
-					for(Map.Entry<Integer, String> translResult : translList.entrySet()) {
+				for(HashMap<Integer, String> translList : entry.getValue()) {//Iterate through the list of HashMaps of a translNo and a non-compl Comp
+					for(Map.Entry<Integer, String> translResult : translList.entrySet()) {//get the translNo and String of a single HashMap
 						int translation = translResult.getKey();
 						String deviationName =  translResult.getValue();
 						System.out.println("Trace No. " + traceNo + " Translation No. " + translation + " Deviating Component: " + deviationName);
@@ -610,17 +633,7 @@ public DeviationMatrix constructDeviationMatrix(DeviationSet[] ds, int traceNo) 
 		//save the co-occurring deviating comps and their frequency of occurrence.
 		// hashmap to store the frequency of element 
 		for(DeviationSet devSet : ds) {
-			/*if(devSet.getDevList().contains(singleComponent)) {
-				for(String i : devSet.getDevList()) {
-					if(!i.equals(singleComponent)) {
-						Integer j = hm.get(i); 
-			            hm.put(i, (j == null) ? 1 : j + 1); 
-					}else if(i.equals(singleComponent)){
-						hm.put(i, 0);
-					}
-					
-				}
-			}*/
+			
 			devSet.getNumberedCoOccurrences(singleComponent, hm);
 			
 		}
@@ -674,33 +687,19 @@ public DeviationSet getSingleDevSet(int traceNo, int translationNo) {
 				}
 			}
 		}
+		
+		
 	}
 	if(deviatingCompNames.size() == 0) {
-		System.out.println("no deviating comp for this trace translation");
+		//System.out.println("no deviating comp for this trace translation");
 		deviatingCompNames.add("No deviating comp for this trace");
 	}
 	double etamsSize = etams.size(); 
 	probability = (1.0 / etamsSize);
-	return new DeviationSet(deviatingCompNames, traceNo, translationNo, probability);
+	return new DeviationSet(deviatingCompNames, traceNo, translationNo, probability);//gets called with toString() methods in RouvensPlugin
 }
 	
-public void printAmbiguousNonCompliantComps() {
-	for(Map.Entry<Integer, List<HashMap<Integer, String>>> ambigNonComp : this.allAmbig.entrySet()) {
-		int traceNo = ambigNonComp.getKey();
-		List<HashMap<Integer, String>> traceLevelAmbigNonComp = ambigNonComp.getValue();
-		for(int i = 0;i<traceLevelAmbigNonComp.size();i++) {
-			boolean onlyFirstTranslation = true;
-			for(Map.Entry<Integer, String> translationEntry : traceLevelAmbigNonComp.get(i).entrySet()) {
-				int translationNo = translationEntry.getKey();
-				String comp = translationEntry.getValue();
-				if(onlyFirstTranslation) {
-					System.out.println("TraceNo: " + traceNo + " Translation No: " + translationNo + " Non compliant Ambig Comp: " + comp /*+ "-> " + components.getComponent(comp).getTrans()*/);
-				}
-			}
-		}
-	}
-	
-}
+
 
 public List<String> getUniqueAmbigComps() {
 	return listA;

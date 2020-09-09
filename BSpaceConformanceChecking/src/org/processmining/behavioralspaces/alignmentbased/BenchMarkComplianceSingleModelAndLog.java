@@ -17,6 +17,7 @@ import org.processmining.behavioralspaces.evaluation.SingleModelEvaluationResult
 import org.processmining.behavioralspaces.matcher.EventActivityMappings;
 import org.processmining.behavioralspaces.matcher.PositionbasedMapper;
 import org.processmining.behavioralspaces.models.behavioralspace.BSpaceLog;
+import org.processmining.behavioralspaces.models.behavioralspace.DeviationSet;
 import org.processmining.behavioralspaces.parameters.BenchmarkEvaluationParameters;
 import org.processmining.behavioralspaces.plugins.AlignmentBasedCheckingBenchmarkPlugin;
 import org.processmining.behavioralspaces.plugins.UncertainComplianceCheckAlignmentBasedPlugin;
@@ -124,9 +125,29 @@ public class BenchMarkComplianceSingleModelAndLog {
 		System.out.println("Starting evaluation for bspacelog.");
 
 		UncertainComplianceCheckAlignmentBasedPlugin plugin = new UncertainComplianceCheckAlignmentBasedPlugin();
+		
+		
 		BSpaceLog bspacelog;
 		try {
 			bspacelog = plugin.exec(context, net, log, etams, parameters.alsoRunNaive);
+			//System.out.println(bspacelog.getAmbiguousActSets());
+			//plugin.printAmbiguousNonCompliantComps();
+			//plugin.printUnambiguousNonCompliantComps();
+
+			DeviationSet ds[] = new DeviationSet[150]; //create Deviation Sets for the interpretations of a single trace
+			//for(int i = 0; i< 150; i++) {
+			for(int i = 0; i< etams.size();i++) {
+				ds[i] = plugin.getSingleDevSet(5500, i);//TODO: impelement a method getDevSets(traceNo) 
+				if(ds[i].size() > 1) {
+					System.out.println(plugin.getSingleDevSet(5500, i).toString());
+				}
+
+			}
+			plugin.constructDeviationMatrix(ds, 5500).showDeviationMatrix();
+			System.out.println("\nUnique Ambiguous non-compliant Components: "+ plugin.getUniqueAmbigComps());
+			System.out.println("\n Unique Unambiguous non-compliant Components: " + plugin.getUniqueUnambigComps());
+			//DeviationSet.constructConnectivityMetric(ds, 5500);
+			//DeviationSet.createDevDistr(ds);
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();

@@ -31,6 +31,7 @@ import org.processmining.acceptingpetrinet.models.AcceptingPetriNet;
 import org.processmining.acceptingpetrinet.models.impl.AcceptingPetriNetFactory;
 import org.processmining.behavioralspaces.algorithms.TraceToBSpaceTranslator;
 import org.processmining.behavioralspaces.alignmentbased.AlignmentBasedChecker;
+import org.processmining.behavioralspaces.alignmentbased.BenchMarkComplianceSingleModelAndLog;
 import org.processmining.behavioralspaces.evaluation.BSpaceComplianceEvaluator;
 import org.processmining.behavioralspaces.matcher.EventActivityMappings;
 import org.processmining.behavioralspaces.matcher.EventToActivityMapper;
@@ -38,6 +39,7 @@ import org.processmining.behavioralspaces.models.behavioralspace.BSpaceLog;
 import org.processmining.behavioralspaces.models.behavioralspace.DeviationSet;
 import org.processmining.behavioralspaces.models.behavioralspace.TraceBSpace;
 import org.processmining.behavioralspaces.models.behavioralspace.XTraceTranslation;
+import org.processmining.behavioralspaces.parameters.BenchmarkEvaluationParameters;
 import org.processmining.behavioralspaces.utils.BSpaceUtils;
 import org.processmining.behavioralspaces.utils.IOHelper;
 import org.processmining.contexts.uitopia.UIPluginContext;
@@ -94,7 +96,7 @@ public class RouvensPlaygroundPlugin {
 	public String exec(PluginContext context) throws Exception {
 		
 		// Step 0: load a Petri net and a corresponding event log, plus initalize stuff
-		String caseName =  "Artificial - Review - Large";//"Artificial - Loan Process";//"BPIC15_1";//"Artificial - Claims"; //"Artificial - Loan Process - Partial";//"Hospital_log";//"Artificial - Claims";//"Road_Traffic_Fines_Management_Process";//"Artificial - Repair";////"Road_Traffic_Fines_Management_Process";//
+		String caseName ="Artificial - Review - Large";//"Artificial - Loan Process";////BPIC15_1";//"Artificial - Repair"; //"Road_Traffic_Fines_Management_Process"; ////"Artificial - Claims"; //"Artificial - Claims";//"Hospital_log";//"Artificial - Claims";/"Road_Traffic_Fines_Management_Process";//
 		String netPath = "input/mwe/" + caseName + ".pnml";
 		String logPath = "input/mwe/" + caseName + ".xes";
 		Petrinet net = loadPetrinet(context, netPath);
@@ -108,6 +110,13 @@ public class RouvensPlaygroundPlugin {
 		XEventClasses classes = logInfo.getEventClasses();
 		XAttributeMap logAttributes = log.getAttributes();
 		TransEvClassMapping transEventMap = computeTransEventMapping(log, net); // not the same as the etams mappings created in Step 1
+		
+		
+		//noise insertion
+		int[] noiseLevel = {40};
+		BenchmarkEvaluationParameters noiseParam = new BenchmarkEvaluationParameters(log.size(), 14, 1,14, noiseLevel , true, true, false, Integer.MAX_VALUE,0.05);
+		BenchMarkComplianceSingleModelAndLog noiseInsertionPlugin = new BenchMarkComplianceSingleModelAndLog(context, net, 40, noiseParam);
+		noiseInsertionPlugin.run();
 		
 		//decomposition
 		SESEDecompositionPlugin decomposer = new SESEDecompositionPlugin();
@@ -141,28 +150,28 @@ public class RouvensPlaygroundPlugin {
 			XLog tbsLog = tbs.translationsAsLog(log);
 			double traceFitness = 0.0;
 			for (XTrace interpretation : tbsLog) {
-				//double intFit = computeTraceFitness(replayer, logAttributes, interpretation);
-				// for now just calculate traceFitness as the average fitness value per interpretation, no probabilities considered
-				//traceFitness = traceFitness + intFit / (tbsLog.size()/4);
+//				double intFit = computeTraceFitness(replayer, logAttributes, interpretation);
+				//for now just calculate traceFitness as the average fitness value per interpretation, no probabilities considered
+//				traceFitness = traceFitness + intFit / (tbsLog.size()/4);
 			}
 			if(i % 50 == 0) {
 				System.out.println(i + " Traces done");
 			}
-			i++;
+			//i++;
 			fitSum += traceFitness;
 		}
 		
 		UncertainComplianceCheckAlignmentBasedPlugin compPlugin = new UncertainComplianceCheckAlignmentBasedPlugin();
 		compPlugin.exec(context, net, log);
-		/*for(Set<String> actSets : compPlugin.exec(context, net, log, etams, false).getAmbiguousActSets()) {
-			for(String str : actSets) {
-				System.out.println("Ambiguous Activity: " + str);
-			}
-		}*/
+		//for(Set<String> actSets : compPlugin.exec(context, net, log, etams, false).getAmbiguousActSets()) {
+		//	for(String str : actSets) {
+		//		System.out.println("Ambiguous Activity: " + str);
+		//	}
+		//}
 		//compPlugin.printAmbiguousNonCompliantComps();
 		
 		//compPlugin.printUnambiguousNonCompliantComps();
-		//compPlugin.printDeviationSets();
+		//compPlugin.printDeviationSets(); //Unformatted
 		
 		DeviationSet ds[] = new DeviationSet[etams.size()];
 		for(int i = 0; i< etams.size();i++) {
@@ -170,11 +179,12 @@ public class RouvensPlaygroundPlugin {
 			System.out.println(compPlugin.getSingleDevSet(5500, i).toString());
 		}
 		compPlugin.constructDeviationMatrix(ds, 5500).showDeviationMatrix();
-		DeviationSet.constructConnectivityMetric(ds, 5500);
+		//DeviationSet.constructConnectivityMetric(ds, 5500);
 		//DeviationSet.createDevDistr(ds);
 		System.out.println("\nUnique Ambiguous non-compliant Components: "+ compPlugin.getUniqueAmbigComps());
 		System.out.println("\n Unique Unambiguous non-compliant Components: " + compPlugin.getUniqueUnambigComps());
-		//System.out.println("Average trace fitness: " + fitSum / (log.size()));
+		
+		System.out.println("Average trace fitness: FitSum: " + fitSum  + " log size" + (log.size()));
 		
 		return "Plugin completed";
 		
@@ -196,12 +206,7 @@ public class RouvensPlaygroundPlugin {
 			//System.out.println(replayer.getEventClass(trace.get(0)));
 			double fitness = (double) pnrresult.getInfo().get(PNRepResult.TRACEFITNESS);
 			fitnessMap.put(traceLabelList, fitness);
-			
-
-			//print the trace
-			/*for(String s: traceLabelList) {
-				System.out.print(s + ", ");
-			}*/
+			return fitness;
 
 			
 			
@@ -266,41 +271,5 @@ public class RouvensPlaygroundPlugin {
 		return mapping;
 	}
 	
-	/*public void writeEdgeTraversed1(ReplayAlgorithm algorithm, int fromMarking, int transition, int toMarking,
-			String extra) {
-		StringBuilder b = new StringBuilder();
-		b.append("i" + algorithm.getIterationNumber());
-		b.append("m");
-		b.append(fromMarking);
-		b.append(" -> ");
-		b.append("i" + algorithm.getIterationNumber());
-		b.append("m");
-		b.append(toMarking);
-		b.append(" [");
-		if (transition >= 0) {
-			b.append("label=<<b>");
-			//				b.append("t");
-			//				b.append(transition);
-			//				b.append("<br/>");
-			b.append(algorithm.getNet().getTransitionLabel(transition));
-			b.append("<br/>");
-			b.append(algorithm.getNet().getCost(transition));
-			b.append("</b>>");
-			if (algorithm.getNet().getTypeOf(transition) == SyncProduct.SYNC_MOVE) {
-				b.append(",fontcolor=forestgreen");
-			} else if (algorithm.getNet().getTypeOf(transition) == SyncProduct.MODEL_MOVE) {
-				b.append(",fontcolor=darkorchid1");
-			} else if (algorithm.getNet().getTypeOf(transition) == SyncProduct.LOG_MOVE) {
-				b.append(",fontcolor=goldenrod2");
-			} else if (algorithm.getNet().getTypeOf(transition) == SyncProduct.TAU_MOVE) {
-				b.append(",fontcolor=honeydew4");
-			}
-		}
-		if (!extra.isEmpty()) {
-			b.append(extra);
-		}
-
-		b.append("];");
-		System.out.println(b);
-	}*/
+	
 }

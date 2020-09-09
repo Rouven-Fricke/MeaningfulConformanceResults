@@ -116,7 +116,7 @@ public class PositionbasedMapper {
 	private EventActivityMappings computeCombinations(Map<String, Set<String>> matches) {
 		List<List<EventMapping>> mappingList = new ArrayList<List<EventMapping>>();
 		mappingList.add(new ArrayList<EventMapping>());
-		
+		System.out.println(matches.size());
 		for (String classO : matches.keySet()) {
 			List<List<EventMapping>> newList = new ArrayList<List<EventMapping>>();
 			for (String classN : matches.get(classO)) {
@@ -129,7 +129,8 @@ public class PositionbasedMapper {
 				}
 			}
 			mappingList = new ArrayList<List<EventMapping>>(newList);
-			if (mappingList.size() > 20000) {
+			System.out.println(mappingList.size() + " MappingList.size()----------------");
+			if (mappingList.size() > 2500000) {
 				System.out.println("Mapping too large");
 				return new EventActivityMappings();
 			}

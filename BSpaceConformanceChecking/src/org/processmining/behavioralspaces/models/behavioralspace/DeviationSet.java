@@ -109,13 +109,17 @@ public class DeviationSet {
 				}
 			}
 			double connectivity = noOfCoOccurringComponents / deviationsOfComp;
-			System.out.println("Single Component: " + singleComponent + " " + noOfCoOccurringComponents + " " + deviationsOfComp);
+			//System.out.println("Single Component: " + singleComponent + " " + noOfCoOccurringComponents + " " + deviationsOfComp);
 			connectivityOfComp.put(singleComponent, connectivity);
 		}
 		for(Map.Entry<String, Double> entry : connectivityOfComp.entrySet()) {
 			System.out.println("Component: " + entry.getKey() + " Connectivity: " + entry.getValue());
 		}
 		
+	}
+	
+	public int size() {
+		return this.deviatingCompNames.size();
 	}
 	
 	public String toString() {
