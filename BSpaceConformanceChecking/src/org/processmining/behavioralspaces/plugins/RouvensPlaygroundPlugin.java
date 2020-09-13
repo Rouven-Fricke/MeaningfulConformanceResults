@@ -1,6 +1,7 @@
 package org.processmining.behavioralspaces.plugins;
 
 import java.io.File;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -36,7 +37,9 @@ import org.processmining.behavioralspaces.evaluation.BSpaceComplianceEvaluator;
 import org.processmining.behavioralspaces.matcher.EventActivityMappings;
 import org.processmining.behavioralspaces.matcher.EventToActivityMapper;
 import org.processmining.behavioralspaces.models.behavioralspace.BSpaceLog;
+import org.processmining.behavioralspaces.models.behavioralspace.DeviationMatrix;
 import org.processmining.behavioralspaces.models.behavioralspace.DeviationSet;
+import org.processmining.behavioralspaces.models.behavioralspace.MetricsResult;
 import org.processmining.behavioralspaces.models.behavioralspace.TraceBSpace;
 import org.processmining.behavioralspaces.models.behavioralspace.XTraceTranslation;
 import org.processmining.behavioralspaces.parameters.BenchmarkEvaluationParameters;
@@ -90,7 +93,8 @@ public class RouvensPlaygroundPlugin {
 	
 	private DCComponents components;
 	private DCDecomposition decomposition;
-	private int i = 0;
+	private int traceNo = 0;
+	private UncertainComplianceCheckAlignmentBasedPlugin compPlugin;
 	@UITopiaVariant(affiliation = "University of Mannheim", author = "Rouven Fricke", email = "rfricke@mail.uni-mannheim.de")
 	@PluginVariant(variantLabel = "Testbed for Rouven", requiredParameterLabels = {})
 	public String exec(PluginContext context) throws Exception {
@@ -113,11 +117,11 @@ public class RouvensPlaygroundPlugin {
 		
 		
 		//noise insertion
-		int[] noiseLevel = {40};
+		/*int[] noiseLevel = {40};
 		BenchmarkEvaluationParameters noiseParam = new BenchmarkEvaluationParameters(log.size(), 14, 1,14, noiseLevel , true, true, false, Integer.MAX_VALUE,0.05);
 		BenchMarkComplianceSingleModelAndLog noiseInsertionPlugin = new BenchMarkComplianceSingleModelAndLog(context, net, 40, noiseParam);
 		noiseInsertionPlugin.run();
-		
+		*/
 		//decomposition
 		SESEDecompositionPlugin decomposer = new SESEDecompositionPlugin();
 		Object[] decompResult = decomposer.decompose(context, net);
@@ -139,10 +143,25 @@ public class RouvensPlaygroundPlugin {
 		//TraceReplayTask... pro Trace
 		TraceToBSpaceTranslator translator = new TraceToBSpaceTranslator(etams);
 		double fitSum = 0;
-		//int i = 0;
-		// Loop over traces in event log
-		//for(XTrace t : log) {
-		for (int i=0; i<log.size();i+=4) {
+		
+		
+		compPlugin = new UncertainComplianceCheckAlignmentBasedPlugin();
+		compPlugin.exec(context, net, log);
+		
+		//get a list of all necessary devSet Arrays (Trace level) to construct matrices
+		List<DeviationSet[]> devSetList = new ArrayList<DeviationSet[]>();
+		List<DeviationMatrix> devMatrixList = new ArrayList<DeviationMatrix>();
+		
+		for (int i=0; i<log.size();i+=500) {
+			DeviationSet ds[] = getDeviationSetsOfATrace(i, etams);//new DeviationSet[etams.size()];
+			/*for(int j = 0; j<etams.size(); j++) {
+				ds[j] = compPlugin.getSingleDevSet(i, j);//create a deviation set for each trace
+				System.out.println(compPlugin.getSingleDevSet(j, j).toString());
+
+			}*/
+			devSetList.add(ds);	//and add the deviation set for the specific trace to the list
+			DeviationMatrix matrix = compPlugin.constructDeviationMatrix(ds, i);//create a deviation matrix with the dev sets array
+			devMatrixList.add(matrix);//add it to the list of deviation matrices
 			
 			// The TBS log captures all interpretations (trace translations) of trace t according to the different mappings in etams
 			//TraceBSpace tbs = translator.translateToBSpace(t);
@@ -161,8 +180,7 @@ public class RouvensPlaygroundPlugin {
 			fitSum += traceFitness;
 		}
 		
-		UncertainComplianceCheckAlignmentBasedPlugin compPlugin = new UncertainComplianceCheckAlignmentBasedPlugin();
-		compPlugin.exec(context, net, log);
+		
 		//for(Set<String> actSets : compPlugin.exec(context, net, log, etams, false).getAmbiguousActSets()) {
 		//	for(String str : actSets) {
 		//		System.out.println("Ambiguous Activity: " + str);
@@ -173,23 +191,54 @@ public class RouvensPlaygroundPlugin {
 		//compPlugin.printUnambiguousNonCompliantComps();
 		//compPlugin.printDeviationSets(); //Unformatted
 		
-		DeviationSet ds[] = new DeviationSet[etams.size()];
+		/*DeviationSet ds1[] = new DeviationSet[etams.size()];
+		DeviationSet ds2[] = new DeviationSet[etams.size()];
 		for(int i = 0; i< etams.size();i++) {
-			ds[i] = compPlugin.getSingleDevSet(5500, i);//TODO: impelement a method getDevSets(traceNo) 
+			ds1[i] = compPlugin.getSingleDevSet(5500, i);//TODO: impelement a method getDevSets(traceNo) 
 			System.out.println(compPlugin.getSingleDevSet(5500, i).toString());
+			ds2[i] = compPlugin.getSingleDevSet(6000, i);
+			//System.out.println(compPlugin.getSingleDevSet(6000, i));
 		}
-		compPlugin.constructDeviationMatrix(ds, 5500).showDeviationMatrix();
-		//DeviationSet.constructConnectivityMetric(ds, 5500);
-		//DeviationSet.createDevDistr(ds);
+		DeviationMatrix m1 = compPlugin.constructDeviationMatrix(ds1, 5500);
+		//DeviationMatrix m2 = compPlugin.constructDeviationMatrix(ds2, 6000);
+		m1.showDeviationMatrix();
+		System.out.println();
+		//m2.showDeviationMatrix();
+		//System.out.println();
+		//m1.addMatrix(m2).showDeviationMatrix();*/
+		DeviationMatrix resultsMatrix = compPlugin.createInitialMatrix();
+		for(DeviationMatrix dm : devMatrixList) {
+			resultsMatrix = resultsMatrix.addMatrix(dm);
+			//dm.showDeviationMatrix();
+		}
+		//resultsMatrix = devMatrixList.get(1).addMatrix(devMatrixList.get(2));
+		resultsMatrix.showDeviationMatrix();
+		
+		
+		
+		
+		int count = 0;
+		DeviationSet[] allDevSets = new DeviationSet[devSetList.size() * etams.size()];
+		for(DeviationSet[] ds: devSetList) {
+			for(int i=0; i<ds.length; i++) {
+				allDevSets[count] = ds[i];
+				count++;
+			}
+		}
+	   
+		
+		DeviationSet.createDevDistr(allDevSets);
+		DeviationSet.constructConnectivityMetric(allDevSets);
 		System.out.println("\nUnique Ambiguous non-compliant Components: "+ compPlugin.getUniqueAmbigComps());
 		System.out.println("\n Unique Unambiguous non-compliant Components: " + compPlugin.getUniqueUnambigComps());
-		
+		//compPlugin.createFullMatrix().showDeviationMatrix();
 		System.out.println("Average trace fitness: FitSum: " + fitSum  + " log size" + (log.size()));
 		
 		return "Plugin completed";
 		
 	}
-		
+	
+	
 	
 	private double computeTraceFitness(Replayer replayer, XAttributeMap logAttributes, XTrace trace) {
 		List<String> traceLabelList = BSpaceUtils.traceToLabelList(trace);
@@ -269,6 +318,15 @@ public class RouvensPlaygroundPlugin {
 			}
 		}
 		return mapping;
+	}
+	
+	private DeviationSet[] getDeviationSetsOfATrace(int traceNo, EventActivityMappings etams) {
+		DeviationSet ds[] = new DeviationSet[etams.size()];
+		for(int j = 0; j<etams.size(); j++) {
+			ds[j] = compPlugin.getSingleDevSet(traceNo, j);//create a deviation set for each trace
+			System.out.println(compPlugin.getSingleDevSet(j, j).toString());
+		}
+		return ds;
 	}
 	
 	

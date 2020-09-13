@@ -617,49 +617,120 @@ private List<String> getDeviatingCompsOfTrace(int traceNo) {
 	return deviatingComps;
 }
 
-//change return type to DeviationMatrix after having programmed that class
-//ggf. also add the trace number as additional input for the method!
+//constructs a deviation Matrix over the full set of deviating components and orders them lexicographically 
 public DeviationMatrix constructDeviationMatrix(DeviationSet[] ds, int traceNo) {
-	List<String> deviatingComps = this.getDeviatingCompsOfTrace(traceNo);
-	java.util.Collections.sort(deviatingComps);
-	String[][] matrixEntries =  new String[getDeviatingCompsOfTrace(traceNo).size()+1][getDeviatingCompsOfTrace(traceNo).size()+1];
+	//List<String> deviatingComps = this.getDeviatingCompsOfTrace(traceNo);
+	List<String> deviatingComps = new ArrayList<String>();
+	deviatingComps.addAll(getUniqueAmbigComps());
+	deviatingComps.addAll(getUniqueUnambigComps());
+	Collections.sort(deviatingComps);
+	//String[][] matrixEntries =  new String[getDeviatingCompsOfTrace(traceNo).size()+1][getDeviatingCompsOfTrace(traceNo).size()+1];
+	String[][] matrixEntries = new String[deviatingComps.size()+1][deviatingComps.size()+1];
 	matrixEntries[0][0] = "Components";
 	boolean topRowFilled = false; //used to label the columns with the component names.
 	
 	int ithComp = 1;
+	int jthComp = 1;
+	//vertically fill in the first column with the Comp Names
+	//horizontally fill in the first row with the Comp Names
+	for(String singleComp : deviatingComps) {
+		matrixEntries[ithComp][0] = singleComp;
+		matrixEntries[0][jthComp] = singleComp;
+		jthComp++;
+		ithComp++;
+	}
+	ithComp = 1;
 	for(String singleComponent : deviatingComps) {
 		Map<String, Integer> hm = new HashMap<String, Integer>();//Elements and their frequency of co-occurrence across all devSets
 		
 		//save the co-occurring deviating comps and their frequency of occurrence.
 		// hashmap to store the frequency of element 
 		for(DeviationSet devSet : ds) {
-			
-			devSet.getNumberedCoOccurrences(singleComponent, hm);
-			
+			//devSet.getNumberedCoOccurrences(singleComponent, hm);
+			getNumberedCoOccurrences2(singleComponent, hm, devSet);
 		}
 		System.out.print("Element " + singleComponent + " co-occurs: ");
-		int jthComp = 1;
-		matrixEntries[ithComp][0] = singleComponent;
+		jthComp = 1;
+		//matrixEntries[ithComp][0] = singleComponent;
 		int counter = 1;
 		TreeMap<String, Integer> sortedMap = sortbykey(hm); //sort both lists lexicographically to have a 0-diagonal matrix.
-		for(Map.Entry<String, Integer> val : sortedMap.entrySet()) {
-		//for (Map.Entry<String, Integer> val : hm.entrySet()) {
-			if(!topRowFilled) {//fill out the first row with the non-compl component names
-				matrixEntries[0][counter] = val.getKey();
+		System.out.print(" " + sortedMap.size() + " ");
+		if(sortedMap.size() == 0) {//Zeile und Spalte mit Nullen füllen
+			for(int j = 1; j<deviatingComps.size() + 1; j++) {
+				matrixEntries[ithComp][j] = "0";//Row
+				matrixEntries[j][deviatingComps.indexOf(singleComponent)+1] = "0";//Column
+				System.out.print(" 0 TIMES with " + deviatingComps.get(j-1));
 			}
+		}
+		for(Map.Entry<String, Integer> val : sortedMap.entrySet()) {//das geht so nicht mehr, müssen alle Components in die Sorted Map nehmen; beachtet die Comps mit 0 nicht
+		//for (Map.Entry<String, Integer> val : hm.entrySet()) {
+			
 			//plus also fill the deviation matrix
 			System.out.print(val.getValue() + " times with " + val.getKey() + ", ");
 			//fill matrix
-			matrixEntries[ithComp][jthComp] = Integer.toString(val.getValue());
+			if(matrixEntries[ithComp][jthComp] == null) {//nur wenn es vorher noch nicht mit 0 befüllt wurde
+				matrixEntries[ithComp][jthComp] = Integer.toString(val.getValue());
+			}else {//wenn es mit 0 befüllt wurde durchgehen, bis es zu einer leeren Stelle kommt
+				System.out.print("else bedingung" + ": " + matrixEntries[ithComp][jthComp]);
+				while(matrixEntries[ithComp][jthComp] == "0" /*&& jthComp <= deviatingComps.size() +1*/) {
+					System.out.println("geht weiter");
+					jthComp++;
+				}
+				matrixEntries[ithComp][jthComp] = Integer.toString(val.getValue());
+			}
+			
 			jthComp++;
 			counter++;
 		}
-		topRowFilled = true;
+		
 		System.out.println();
 		
 		ithComp++;
 	}
+	//fill in the missing values with 0s.
+	for(int i = 1;i<deviatingComps.size()+1;i++) {
+		 for(int j = 1;j < deviatingComps.size()+1;j++) {
+			 if(matrixEntries[i][j] == null) {
+				 matrixEntries[i][j] = "0";
+			 }
+		 }
+	 }
 	return new DeviationMatrix(matrixEntries);
+}
+
+//create a dummy full deviation matrix initialized with 0s (zeroes) so we can properly add the actual values.
+public DeviationMatrix createInitialMatrix() {
+	List<String> allComps = new ArrayList<String>();
+	allComps.addAll(getUniqueAmbigComps());
+	allComps.addAll(getUniqueUnambigComps());
+	Collections.sort(allComps);//alphabetic order.
+	
+	//initialize the matrix with the correct size
+	String[][] matrixEntries = new String[allComps.size()+1][allComps.size()+1];
+	matrixEntries[0][0] = "Components";
+	
+	int ithComp = 1;
+	int jthComp = 1;
+	//vertically fill in the first column with the Comp Names
+	//horizontally fill in the first row with the Comp Names
+	for(String singleComp : allComps) {
+		matrixEntries[ithComp][0] = singleComp;
+		matrixEntries[0][jthComp] = singleComp;
+		jthComp++;
+		ithComp++;
+	}
+	
+	//initialize the rest of the Matrix with 0-Strings(!)
+	//cast to int and back during adding ofc.
+	for(int i = 1; i <=allComps.size(); i++) {
+		for(int j = 1; j<= allComps.size();j++) {
+			matrixEntries[i][j] = "0";
+			System.out.print(matrixEntries[i][j]);
+		}
+		System.out.println();
+	}
+	return new DeviationMatrix(matrixEntries);
+
 }
 
 
@@ -690,10 +761,11 @@ public DeviationSet getSingleDevSet(int traceNo, int translationNo) {
 		
 		
 	}
-	if(deviatingCompNames.size() == 0) {
+	//Besser handeln!!
+	/*if(deviatingCompNames.size() == 0) {
 		//System.out.println("no deviating comp for this trace translation");
-		deviatingCompNames.add("No deviating comp for this trace");
-	}
+		deviatingCompNames.add("No deviating comp for this trace"); 
+	}*/
 	double etamsSize = etams.size(); 
 	probability = (1.0 / etamsSize);
 	return new DeviationSet(deviatingCompNames, traceNo, translationNo, probability);//gets called with toString() methods in RouvensPlugin
@@ -708,6 +780,13 @@ public List<String> getUniqueAmbigComps() {
 
 public List<String> getUniqueUnambigComps(){
 	return listU;
+}
+
+public List<String> getAllNonConfComps(){
+	List<String> list = new ArrayList<String>();
+	list.addAll(listA);
+	list.addAll(listU);
+	return list;
 }
 	
 	
@@ -737,7 +816,27 @@ private TreeMap<String, Integer> sortbykey(Map<String, Integer> map) {
                   ", Value = " + entry.getValue());    */     
  return sorted;
 } 
-	
+
+private Map<String, Integer> getNumberedCoOccurrences2(String originalComp, Map<String, Integer> hm, DeviationSet ds){
+	if(ds.getDevList().contains(originalComp)) {
+		for(String comp : ds.getDevList()) {//for each comp of the whole list of non-compl comps
+			if(!comp.equals(originalComp)) {
+				Integer j = hm.get(comp); 
+	            hm.put(comp, (j == null) ? 1 : j + 1); 
+			}else if(comp.equals(originalComp)){
+				hm.put(comp, 0);
+			}
+		}
+	}
+	//hier noch was einfügen??? Dürfen nicht nur über this.getDevList gehen sondern müssen über alle non-compl comps gehen.
+	List<String> allComps = this.getAllNonConfComps();
+	for(String str : allComps) {
+		if(!hm.containsKey(str)) {
+			hm.put(str, 0);
+		}
+	}
+	return hm;
+}
 
 	
 }
