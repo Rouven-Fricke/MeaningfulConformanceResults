@@ -1,5 +1,12 @@
 package org.processmining.behavioralspaces.models.behavioralspace;
 
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.TreeMap;
+
 import org.apache.commons.lang3.StringUtils;
 
 public class DeviationMatrix {
@@ -81,9 +88,78 @@ public class DeviationMatrix {
     	return resMatrix;
     }
     
+    public void computeMatrixMeasures(DeviationSet[] ds) {
+    	//could put the first part that counts the occurrences of the single comps in a separate method as we use it twice.
+    	List<String> compList = new ArrayList<String>();
+		//fill the list (multiset) with all deviations
+		for(DeviationSet devSet : ds) {
+			for(String str : devSet.getDevList()) {
+				compList.add(str);
+			}
+		}
+		double noOfTotalDevs = compList.size(); //total number of deviations dev(trace, Model)
+		// hashmap to store the frequency of element 
+        Map<String, Integer> hm = new HashMap<String, Integer>();
+		for(String i : compList) {
+			Integer j = hm.get(i); 
+            hm.put(i, (j == null) ? 1 : j + 1); 
+		}
+		
+		TreeMap<String, Integer> sortedMap = sortbykey(hm);
+		//second: get the occurrences of the individual non-conf comps.
+		LinkedHashMap<String, Double> mapToSort = new LinkedHashMap<String, Double>();//ensure the order remains alphabetic over time
+		 for (Map.Entry<String, Integer> val : sortedMap.entrySet()) {//loop through by alphabet
+			 double devDistr = val.getValue() / noOfTotalDevs;
+			 mapToSort.put(val.getKey(), devDistr); //Component and how often it deviates in total              
+		 }
+		 
+		 String[][] matrixEntries = this.getMatrixEntries();
+		 for(Map.Entry<String, Integer> entry : sortedMap.entrySet()) {
+			 List<String> guaranteedCoOccurrences = new ArrayList<String>();
+			 List<String> exclusiveness = new ArrayList<String>();
+			 double totalDevs = entry.getValue();
+			 for(int i = 1; i< matrixEntries.length; i++) {
+				 if(matrixEntries[i][0].equals(entry.getKey())) {//only for the respective row of the matrix
+					 for(int j = 1; j< matrixEntries.length; j++) {
+						 if(Double.parseDouble(matrixEntries[i][j]) /  totalDevs == 1.0) {
+							 guaranteedCoOccurrences.add(matrixEntries[0][j]);
+						 }
+						 if(Double.parseDouble(matrixEntries[i][j]) / totalDevs <= 0.2) {
+							 exclusiveness.add(matrixEntries[0][j]);
+						 }
+					 }
+				 }
+			 }
+			 System.out.print("Element " + entry.getKey() + " co-occurs certainly with: ");
+			 for(String str : guaranteedCoOccurrences) {
+				 System.out.print(str + ", ");
+			 }
+			 System.out.println();
+			 System.out.print("Element " + entry.getKey() + " is (almost/in more than 80% of all traces) exclusive to: ");
+			 for(String str : exclusiveness) {
+				 System.out.print(str + ", ");
+			 }
+			 System.out.println();
+		 }
+    }
+    
     public String[][] getMatrixEntries(){
     	return this.data;
     }
    
 
+  //Function to sort map by Key 
+  	private static TreeMap<String, Integer> sortbykey(Map<String, Integer> map) { 
+  	 // TreeMap to store values of HashMap 
+  	 TreeMap<String, Integer> sorted = new TreeMap<>(); 
+
+  	 // Copy all data from hashMap into TreeMap 
+  	 sorted.putAll(map); 
+
+  	 // Display the TreeMap which is naturally sorted 
+  	 /*for (Map.Entry<String, Integer> entry : sorted.entrySet())  
+  	     System.out.println("Key = " + entry.getKey() +  
+  	                  ", Value = " + entry.getValue());    */    
+  	 return sorted;
+  	}
 }

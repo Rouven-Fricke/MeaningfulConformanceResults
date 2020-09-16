@@ -11,7 +11,7 @@ public class HierarchyComparator implements Comparator<MetricsResult> {
 	@Override
 	public int compare(MetricsResult r1, MetricsResult r2) {
 		return new CompareToBuilder()
-				.append(r1.getDevDistr(), r2.getDevDistr())
-				.append(r1.getConnectivity(), r2.getConnectivity()).toComparison();
+				.append(r2.getDevDistr(), r1.getDevDistr())
+				.append(r2.getConnectivity(), r1.getConnectivity()).toComparison();
 	}
 }

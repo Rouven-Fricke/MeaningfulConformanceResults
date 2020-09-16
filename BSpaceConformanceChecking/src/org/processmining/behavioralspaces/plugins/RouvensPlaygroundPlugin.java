@@ -159,7 +159,7 @@ public class RouvensPlaygroundPlugin {
 				System.out.println(compPlugin.getSingleDevSet(j, j).toString());
 
 			}*/
-			devSetList.add(ds);	//and add the deviation set for the specific trace to the list
+			devSetList.add(ds);	//and add the deviation set for the specific trace to the list; for each trace a different dev matrix
 			DeviationMatrix matrix = compPlugin.constructDeviationMatrix(ds, i);//create a deviation matrix with the dev sets array
 			devMatrixList.add(matrix);//add it to the list of deviation matrices
 			
@@ -216,7 +216,8 @@ public class RouvensPlaygroundPlugin {
 		
 		
 		
-		
+		//get all the DeviationSets of the whole log 
+		//reduce/flatten the list of arrays to a single array.
 		int count = 0;
 		DeviationSet[] allDevSets = new DeviationSet[devSetList.size() * etams.size()];
 		for(DeviationSet[] ds: devSetList) {
@@ -226,9 +227,10 @@ public class RouvensPlaygroundPlugin {
 			}
 		}
 	   
-		
-		DeviationSet.createDevDistr(allDevSets);
-		DeviationSet.constructConnectivityMetric(allDevSets);
+		resultsMatrix.computeMatrixMeasures(allDevSets);
+		//DeviationSet.createDevDistr(allDevSets);
+		//DeviationSet.constructConnectivityMetric(allDevSets);
+		//DeviationSet.buildHierarchy(allDevSets);
 		System.out.println("\nUnique Ambiguous non-compliant Components: "+ compPlugin.getUniqueAmbigComps());
 		System.out.println("\n Unique Unambiguous non-compliant Components: " + compPlugin.getUniqueUnambigComps());
 		//compPlugin.createFullMatrix().showDeviationMatrix();
