@@ -45,6 +45,7 @@ import org.processmining.behavioralspaces.models.behavioralspace.XTraceTranslati
 import org.processmining.behavioralspaces.parameters.BenchmarkEvaluationParameters;
 import org.processmining.behavioralspaces.utils.BSpaceUtils;
 import org.processmining.behavioralspaces.utils.IOHelper;
+import org.processmining.behavioralspaces.visualization.GraphBuilder;
 import org.processmining.contexts.uitopia.UIPluginContext;
 import org.processmining.contexts.uitopia.annotations.UITopiaVariant;
 import org.processmining.framework.plugin.PluginContext;
@@ -227,15 +228,18 @@ public class RouvensPlaygroundPlugin {
 			}
 		}
 	   
+		//add boundary values for exclusiveness in the function call?
 		resultsMatrix.computeMatrixMeasures(allDevSets);
 		//DeviationSet.createDevDistr(allDevSets);
 		//DeviationSet.constructConnectivityMetric(allDevSets);
 		//DeviationSet.buildHierarchy(allDevSets);
 		System.out.println("\nUnique Ambiguous non-compliant Components: "+ compPlugin.getUniqueAmbigComps());
 		System.out.println("\n Unique Unambiguous non-compliant Components: " + compPlugin.getUniqueUnambigComps());
+		compPlugin.printUniqueDCComps();
 		//compPlugin.createFullMatrix().showDeviationMatrix();
-		System.out.println("Average trace fitness: FitSum: " + fitSum  + " log size" + (log.size()));
-		
+		//System.out.println("Average trace fitness: FitSum: " + fitSum  + " log size" + (log.size()));
+		GraphBuilder gb = new GraphBuilder(resultsMatrix);
+		gb.run();
 		return "Plugin completed";
 		
 	}

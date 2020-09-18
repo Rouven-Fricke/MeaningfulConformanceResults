@@ -203,15 +203,9 @@ public class DeviationSet {
 	//Function to sort map by Key 
 	private static TreeMap<String, Integer> sortbykey(Map<String, Integer> map) { 
 	 // TreeMap to store values of HashMap 
-	 TreeMap<String, Integer> sorted = new TreeMap<>(); 
-
+	 TreeMap<String, Integer> sorted = new TreeMap<>();
 	 // Copy all data from hashMap into TreeMap 
 	 sorted.putAll(map); 
-
-	 // Display the TreeMap which is naturally sorted 
-	 /*for (Map.Entry<String, Integer> entry : sorted.entrySet())  
-	     System.out.println("Key = " + entry.getKey() +  
-	                  ", Value = " + entry.getValue());    */    
 	 return sorted;
 	}
 	private static TreeMap<String, Double> sortDoublesbykey(Map<String, Double> map) { 

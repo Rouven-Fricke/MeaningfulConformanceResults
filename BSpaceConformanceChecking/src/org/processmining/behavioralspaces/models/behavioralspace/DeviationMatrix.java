@@ -13,6 +13,9 @@ public class DeviationMatrix {
 	private  int M;             // number of rows
     private  int N;             // number of columns
     private  String[][] data;   // M-by-N array
+    
+    //for the graphBuilder provide a deviation set 
+    private DeviationSet[] ds;
 
     // create M-by-N matrix of 0's
     public DeviationMatrix(int M, int N) {
@@ -89,6 +92,7 @@ public class DeviationMatrix {
     }
     
     public void computeMatrixMeasures(DeviationSet[] ds) {
+    	this.ds = ds;//for the GraphBuilder helper method noOfDevs
     	//could put the first part that counts the occurrences of the single comps in a separate method as we use it twice.
     	List<String> compList = new ArrayList<String>();
 		//fill the list (multiset) with all deviations
@@ -161,5 +165,31 @@ public class DeviationMatrix {
   	     System.out.println("Key = " + entry.getKey() +  
   	                  ", Value = " + entry.getValue());    */    
   	 return sorted;
+  	}
+  	
+  	public LinkedHashMap<String, Integer> noOfDevs() {
+  	//could put the first part that counts the occurrences of the single comps in a separate method as we use it twice.
+    	List<String> compList = new ArrayList<String>();
+		//fill the list (multiset) with all deviations
+		for(DeviationSet devSet : this.ds) {
+			for(String str : devSet.getDevList()) {
+				compList.add(str);
+			}
+		}
+		// hashmap to store the frequency of element 
+        Map<String, Integer> hm = new HashMap<String, Integer>();
+		for(String i : compList) {
+			Integer j = hm.get(i); 
+            hm.put(i, (j == null) ? 1 : j + 1); 
+		}
+		
+		TreeMap<String, Integer> sortedMap = sortbykey(hm);
+		//second: get the occurrences of the individual non-conf comps.
+		LinkedHashMap<String, Integer> mapToSort = new LinkedHashMap<String,Integer>();//ensure the order remains alphabetic over time
+		 for (Map.Entry<String, Integer> val : sortedMap.entrySet()) {//loop through by alphabet
+			int totalDevsOfComp = val.getValue();
+			 mapToSort.put(val.getKey(), totalDevsOfComp); //Component and how often it deviates in total              
+		 }
+		return mapToSort;
   	}
 }

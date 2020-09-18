@@ -95,6 +95,8 @@ public class UncertainComplianceCheckAlignmentBasedPlugin {
 	private int traceNumber = 0;
 	private List<String> listU = new ArrayList<String>();//list of unique unambiguous components
 	private List<String> listA = new ArrayList<String>();// list of unique ambiguous components
+	private List<DCComponent> listCompU = new ArrayList<DCComponent>();
+	private List<DCComponent> listCompA = new ArrayList<DCComponent>();
 	
 	public enum ExecMode {
 		NAIVE, EFFICIENT
@@ -366,6 +368,9 @@ public class UncertainComplianceCheckAlignmentBasedPlugin {
 						if(!listU.contains(compName)) {
 							listU.add(compName);//we only store the unique unambiguous comps in this list.
 						}
+						if(!listCompU.contains(components.getComponent(compName))) {
+							listCompU.add(components.getComponent(compName));
+						}
 					}
 
 					
@@ -481,6 +486,10 @@ public class UncertainComplianceCheckAlignmentBasedPlugin {
 							if(fit < 1) {
 								if(!listA.contains(compName)) {
 									listA.add(compName); //get unique ambiguous noncompl comps.
+									//listA.add(components.getComponent(compName)); //listA und listU mit DCComponents machen für unique Liste an Comps mit deren Transitionen
+								}
+								if(!listCompA.contains(components.getComponent(compName))) {
+									listCompA.add(components.getComponent(compName));
 								}
 							}
 							
@@ -569,7 +578,7 @@ public void printAmbiguousNonCompliantComps() {
 			for(Map.Entry<Integer, String> translationEntry : traceLevelAmbigNonComp.get(i).entrySet()) {
 				int translationNo = translationEntry.getKey();
 				String comp = translationEntry.getValue();
-				System.out.println("TraceNo: " + traceNo + " Translation No: " + translationNo + " Non compliant Ambig Comp: " + comp /*+ "-> " + components.getComponent(comp).getTrans()*/);
+				System.out.println("TraceNo: " + traceNo + " Translation No: " + translationNo + " Non compliant Ambig Comp: " + comp + "-> " + components.getComponent(comp).getTrans());
 			}
 		}
 	}
@@ -780,6 +789,15 @@ public List<String> getUniqueAmbigComps() {
 
 public List<String> getUniqueUnambigComps(){
 	return listU;
+}
+
+public void printUniqueDCComps() {
+	for(DCComponent dc : listCompU) {
+		System.out.println(dc.getName() + " -> " + dc.getTrans());
+	}
+	for(DCComponent dc : listCompA) {
+		System.out.println(dc.getName() + " -> " +dc.getTrans());
+	}
 }
 
 public List<String> getAllNonConfComps(){
