@@ -59,6 +59,7 @@ import org.processmining.models.semantics.petrinet.Marking;
 import org.processmining.plugins.connectionfactories.logpetrinet.EvClassLogPetrinetConnectionFactoryUI;
 import org.processmining.plugins.connectionfactories.logpetrinet.TransEvClassMapping;
 import org.processmining.plugins.dc.conn.DCDecompositionPetrinetConnection;
+import org.processmining.plugins.dc.decomp.DCComponent;
 import org.processmining.plugins.dc.decomp.DCComponents;
 import org.processmining.plugins.dc.decomp.DCDecomposition;
 import org.processmining.plugins.dc.plugins.KPartitioningPlugin;
@@ -208,6 +209,7 @@ public class RouvensPlaygroundPlugin {
 		//System.out.println();
 		//m1.addMatrix(m2).showDeviationMatrix();*/
 		DeviationMatrix resultsMatrix = compPlugin.createInitialMatrix();
+		
 		for(DeviationMatrix dm : devMatrixList) {
 			resultsMatrix = resultsMatrix.addMatrix(dm);
 			//dm.showDeviationMatrix();
@@ -232,14 +234,18 @@ public class RouvensPlaygroundPlugin {
 		resultsMatrix.computeMatrixMeasures(allDevSets);
 		//DeviationSet.createDevDistr(allDevSets);
 		//DeviationSet.constructConnectivityMetric(allDevSets);
-		//DeviationSet.buildHierarchy(allDevSets);
+		DeviationSet.buildHierarchy(allDevSets);
 		System.out.println("\nUnique Ambiguous non-compliant Components: "+ compPlugin.getUniqueAmbigComps());
 		System.out.println("\n Unique Unambiguous non-compliant Components: " + compPlugin.getUniqueUnambigComps());
-		compPlugin.printUniqueDCComps();
+		for(DCComponent dc : compPlugin.getUniqueDCComps()) {
+			System.out.println("Component: " + dc.getName() + " Transitions: " + dc.getTrans());
+		}
 		//compPlugin.createFullMatrix().showDeviationMatrix();
 		//System.out.println("Average trace fitness: FitSum: " + fitSum  + " log size" + (log.size()));
 		GraphBuilder gb = new GraphBuilder(resultsMatrix);
-		gb.run();
+		//gb.setDeviationSet(allDevSets);
+		//gb.guaranteedCoOccurrenceForTopN(allDevSets, resultsMatrix, 10);
+		gb.runGraphViz();
 		return "Plugin completed";
 		
 	}

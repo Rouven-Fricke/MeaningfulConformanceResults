@@ -36,6 +36,10 @@ public class MetricsResult {
 		return this.connectivity;
 	}
 	
+	public String getCompName() {
+		return this.compName;
+	}
+	
 	public String toString() {
 		return "Component: " + compName + " Deviation Distribution: " + devDistr + " Connectivity: " + connectivity;
 	}

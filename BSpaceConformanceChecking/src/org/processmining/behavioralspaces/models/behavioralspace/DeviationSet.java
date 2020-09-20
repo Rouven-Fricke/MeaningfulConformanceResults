@@ -158,7 +158,7 @@ public class DeviationSet {
 		 return unsortedMap;
 	}
 	
-	public static void buildHierarchy(DeviationSet[] ds) {
+	public static List<MetricsResult> buildHierarchy(DeviationSet[] ds) {
 		//Step 1: get a list of all the metrics results(name, dd, conn)
 		List<MetricsResult> resultList = new ArrayList<>();
 		HashMap<String, Double> devDistrResults = createDevDistr(ds);
@@ -188,6 +188,7 @@ public class DeviationSet {
         for (MetricsResult res: resultList) {
             System.out.println(res);
         }
+        return resultList;
 	}
 	
 	public int size() {

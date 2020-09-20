@@ -710,10 +710,51 @@ public DeviationMatrix constructDeviationMatrix(DeviationSet[] ds, int traceNo) 
 //create a dummy full deviation matrix initialized with 0s (zeroes) so we can properly add the actual values.
 public DeviationMatrix createInitialMatrix() {
 	List<String> allComps = new ArrayList<String>();
-	allComps.addAll(getUniqueAmbigComps());
-	allComps.addAll(getUniqueUnambigComps());
+	for(DCComponent str : getUniqueDCComps()) {
+		allComps.add(str.getName());
+		Collections.sort(allComps);
+	}
+	/*List<Set<Transition>> transitionList = new ArrayList<Set<Transition>>();
+	for(DCComponent comp1 : getUniqueDCComps()) {
+		Set<Transition> transition = comp1.getTrans();
+		if(!transitionList.contains(comp1.getTrans())) {
+			transitionList.add(transition);
+		}
+	}
 	Collections.sort(allComps);//alphabetic order.
+	//determine the size of the matrix
+	int size = 0;
+	for(Set<Transition> trans: transitionList) {
+		if(trans.size() < 5) {//only consider the components that inlcude a reasonable amount of transitions
+			size++;
+		}
+	}
+	String[][] matrixEntries = new String[size+1][size+1];
+	matrixEntries[0][0] = "Components";
 	
+	int ithComp = 1;
+	int jthComp = 1;
+	//vertically fill in the first column with the Comp Names
+	//horizontally fill in the first row with the Comp Names
+	for(Set<Transition> trans: transitionList) {
+		if(trans.size() < 5) {//only consider the components that inlcude a reasonable amount of transitions
+			matrixEntries[ithComp][0] = trans.toString();
+			matrixEntries[0][jthComp] = trans.toString();
+			jthComp++;
+			ithComp++;
+		}
+	}
+	
+	//initialize the rest of the Matrix with 0-Strings(!)
+	//cast to int and back during adding ofc.
+	for(int i = 1; i <= size; i++) {
+		for(int j = 1; j<= size;j++) {
+			matrixEntries[i][j] = "0";
+			System.out.print(matrixEntries[i][j]);
+		}
+		System.out.println();
+	}
+	*/
 	//initialize the matrix with the correct size
 	String[][] matrixEntries = new String[allComps.size()+1][allComps.size()+1];
 	matrixEntries[0][0] = "Components";
@@ -738,6 +779,7 @@ public DeviationMatrix createInitialMatrix() {
 		}
 		System.out.println();
 	}
+	
 	return new DeviationMatrix(matrixEntries);
 
 }
@@ -783,21 +825,27 @@ public DeviationSet getSingleDevSet(int traceNo, int translationNo) {
 
 
 public List<String> getUniqueAmbigComps() {
-	return listA;
-
+	 Collections.sort(listA);
+	 return listA;
 }
 
 public List<String> getUniqueUnambigComps(){
-	return listU;
+	 Collections.sort(listU);
+	 return listU;
 }
 
-public void printUniqueDCComps() {
-	for(DCComponent dc : listCompU) {
+public List<DCComponent> getUniqueDCComps() {
+	/*for(DCComponent dc : listCompU) {
 		System.out.println(dc.getName() + " -> " + dc.getTrans());
 	}
 	for(DCComponent dc : listCompA) {
 		System.out.println(dc.getName() + " -> " +dc.getTrans());
-	}
+	}*/
+	List<DCComponent> list = new ArrayList<DCComponent>();
+	list.addAll(listCompA);
+	list.addAll(listCompU);
+	
+	return list;
 }
 
 public List<String> getAllNonConfComps(){
