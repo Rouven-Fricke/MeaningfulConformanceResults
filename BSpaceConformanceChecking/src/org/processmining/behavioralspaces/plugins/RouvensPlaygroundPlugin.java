@@ -1,6 +1,8 @@
 package org.processmining.behavioralspaces.plugins;
 
+import java.awt.BorderLayout;
 import java.io.File;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -11,6 +13,10 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 
 import javax.swing.JComponent;
+import javax.swing.JFrame;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
+import javax.swing.JTextField;
 
 import org.deckfour.xes.classification.XEventClass;
 import org.deckfour.xes.classification.XEventClasses;
@@ -41,11 +47,10 @@ import org.processmining.behavioralspaces.models.behavioralspace.DeviationMatrix
 import org.processmining.behavioralspaces.models.behavioralspace.DeviationSet;
 import org.processmining.behavioralspaces.models.behavioralspace.MetricsResult;
 import org.processmining.behavioralspaces.models.behavioralspace.TraceBSpace;
-import org.processmining.behavioralspaces.models.behavioralspace.XTraceTranslation;
-import org.processmining.behavioralspaces.parameters.BenchmarkEvaluationParameters;
 import org.processmining.behavioralspaces.utils.BSpaceUtils;
 import org.processmining.behavioralspaces.utils.IOHelper;
 import org.processmining.behavioralspaces.visualization.GraphBuilder;
+import org.processmining.behavioralspaces.visualization.PresenterFrame;
 import org.processmining.contexts.uitopia.UIPluginContext;
 import org.processmining.contexts.uitopia.annotations.UITopiaVariant;
 import org.processmining.framework.plugin.PluginContext;
@@ -58,38 +63,28 @@ import org.processmining.models.graphbased.directed.petrinet.elements.Transition
 import org.processmining.models.semantics.petrinet.Marking;
 import org.processmining.plugins.connectionfactories.logpetrinet.EvClassLogPetrinetConnectionFactoryUI;
 import org.processmining.plugins.connectionfactories.logpetrinet.TransEvClassMapping;
-import org.processmining.plugins.dc.conn.DCDecompositionPetrinetConnection;
-import org.processmining.plugins.dc.decomp.DCComponent;
 import org.processmining.plugins.dc.decomp.DCComponents;
 import org.processmining.plugins.dc.decomp.DCDecomposition;
 import org.processmining.plugins.dc.plugins.KPartitioningPlugin;
 import org.processmining.plugins.dc.plugins.SESEDecompositionPlugin;
-import org.processmining.plugins.petrinet.replayer.algorithms.IPNReplayParameter;
-import org.processmining.plugins.petrinet.replayer.algorithms.costbasedprefix.CostBasedPrefixAlg;
-import org.processmining.plugins.petrinet.replayer.algorithms.costbasedprefix.CostBasedPrefixParam;
-import org.processmining.plugins.petrinet.replayer.algorithms.costbasedprefix.CostBasedPrefixUI;
-import org.processmining.plugins.petrinet.replayer.algorithms.syncproduct.SyncProductAlg;
+import org.processmining.plugins.graphviz.visualisation.DotVisualisation;
 import org.processmining.plugins.petrinet.replayresult.PNRepResult;
-import org.processmining.plugins.petrinet.replayresult.StepTypes;
-import org.processmining.plugins.replayer.replayresult.SyncReplayResult;
-
-import gnu.trove.map.TObjectIntMap;
 import nl.tue.alignment.Progress;
 import nl.tue.alignment.Replayer;
 import nl.tue.alignment.ReplayerParameters;
 import nl.tue.alignment.ReplayerParameters.Default;
-import nl.tue.alignment.TraceReplayTask;
-import nl.tue.alignment.Utils;
-import nl.tue.alignment.TraceReplayTask.TraceReplayResult;
-import nl.tue.alignment.algorithms.ReplayAlgorithm;
 import nl.tue.alignment.algorithms.ReplayAlgorithm.Debug;
-import nl.tue.alignment.algorithms.implementations.AStarLargeLP;
-import nl.tue.alignment.algorithms.syncproduct.SyncProduct;
-import nl.tue.astar.AStarThread;
+import org.processmining.plugins.graphviz.dot.Dot;
+import org.processmining.plugins.graphviz.visualisation.*;
 
-@Plugin(name = "Rouven's uncertain conformance checking testbed", parameterLabels = {}, 
-returnLabels = { "Meaningful conformance results" }, returnTypes = {String.class },  userAccessible = true)
-public class RouvensPlaygroundPlugin {
+@Plugin(name = "Rouven's uncertain conformance checking testbed", parameterLabels = {"Dot"}, 
+returnLabels = { "Meaningful conformance results" }, returnTypes = {DotPanel.class },  userAccessible = true)
+public class RouvensPlaygroundPlugin extends JFrame{
+
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
 
 	Map<List<String>, Double> fitnessMap;
 	
@@ -97,12 +92,16 @@ public class RouvensPlaygroundPlugin {
 	private DCDecomposition decomposition;
 	private int traceNo = 0;
 	private UncertainComplianceCheckAlignmentBasedPlugin compPlugin;
+	private static DeviationMatrix resultsMatrix;
+	private static DeviationSet[] allDevSets;
+
+	
 	@UITopiaVariant(affiliation = "University of Mannheim", author = "Rouven Fricke", email = "rfricke@mail.uni-mannheim.de")
 	@PluginVariant(variantLabel = "Testbed for Rouven", requiredParameterLabels = {})
-	public String exec(PluginContext context) throws Exception {
+	public JComponent exec(PluginContext context) throws Exception {
 		
 		// Step 0: load a Petri net and a corresponding event log, plus initalize stuff
-		String caseName ="Artificial - Review - Large";//"Artificial - Loan Process";////BPIC15_1";//"Artificial - Repair"; //"Road_Traffic_Fines_Management_Process"; ////"Artificial - Claims"; //"Artificial - Claims";//"Hospital_log";//"Artificial - Claims";/"Road_Traffic_Fines_Management_Process";//
+		String caseName ="Artificial - Review - Large";//"Artificial - Loan Process";//BPIC15_1";//"Artificial - Repair"; //"Road_Traffic_Fines_Management_Process"; ////"Artificial - Claims"; //"Artificial - Claims";//"Hospital_log";//"Artificial - Claims";/"Road_Traffic_Fines_Management_Process";//
 		String netPath = "input/mwe/" + caseName + ".pnml";
 		String logPath = "input/mwe/" + caseName + ".xes";
 		Petrinet net = loadPetrinet(context, netPath);
@@ -181,76 +180,74 @@ public class RouvensPlaygroundPlugin {
 			//i++;
 			fitSum += traceFitness;
 		}
-		
-		
-		//for(Set<String> actSets : compPlugin.exec(context, net, log, etams, false).getAmbiguousActSets()) {
-		//	for(String str : actSets) {
-		//		System.out.println("Ambiguous Activity: " + str);
-		//	}
-		//}
 		//compPlugin.printAmbiguousNonCompliantComps();
-		
 		//compPlugin.printUnambiguousNonCompliantComps();
 		//compPlugin.printDeviationSets(); //Unformatted
 		
-		/*DeviationSet ds1[] = new DeviationSet[etams.size()];
-		DeviationSet ds2[] = new DeviationSet[etams.size()];
-		for(int i = 0; i< etams.size();i++) {
-			ds1[i] = compPlugin.getSingleDevSet(5500, i);//TODO: impelement a method getDevSets(traceNo) 
-			System.out.println(compPlugin.getSingleDevSet(5500, i).toString());
-			ds2[i] = compPlugin.getSingleDevSet(6000, i);
-			//System.out.println(compPlugin.getSingleDevSet(6000, i));
-		}
-		DeviationMatrix m1 = compPlugin.constructDeviationMatrix(ds1, 5500);
-		//DeviationMatrix m2 = compPlugin.constructDeviationMatrix(ds2, 6000);
-		m1.showDeviationMatrix();
-		System.out.println();
-		//m2.showDeviationMatrix();
-		//System.out.println();
-		//m1.addMatrix(m2).showDeviationMatrix();*/
-		DeviationMatrix resultsMatrix = compPlugin.createInitialMatrix();
+		resultsMatrix = compPlugin.createInitialMatrix();
 		
 		for(DeviationMatrix dm : devMatrixList) {
 			resultsMatrix = resultsMatrix.addMatrix(dm);
-			//dm.showDeviationMatrix();
 		}
-		//resultsMatrix = devMatrixList.get(1).addMatrix(devMatrixList.get(2));
 		resultsMatrix.showDeviationMatrix();
-		
-		
 		
 		//get all the DeviationSets of the whole log 
 		//reduce/flatten the list of arrays to a single array.
 		int count = 0;
-		DeviationSet[] allDevSets = new DeviationSet[devSetList.size() * etams.size()];
+		allDevSets = new DeviationSet[devSetList.size() * etams.size()];
 		for(DeviationSet[] ds: devSetList) {
 			for(int i=0; i<ds.length; i++) {
 				allDevSets[count] = ds[i];
 				count++;
 			}
 		}
-	   
 		//add boundary values for exclusiveness in the function call?
 		resultsMatrix.computeMatrixMeasures(allDevSets);
-		//DeviationSet.createDevDistr(allDevSets);
-		//DeviationSet.constructConnectivityMetric(allDevSets);
+		DeviationSet.createDevDistr(allDevSets);
+		DeviationSet.constructConnectivityMetric(allDevSets);
 		DeviationSet.buildHierarchy(allDevSets);
 		System.out.println("\nUnique Ambiguous non-compliant Components: "+ compPlugin.getUniqueAmbigComps());
 		System.out.println("\n Unique Unambiguous non-compliant Components: " + compPlugin.getUniqueUnambigComps());
-		for(DCComponent dc : compPlugin.getUniqueDCComps()) {
-			System.out.println("Component: " + dc.getName() + " Transitions: " + dc.getTrans());
-		}
-		//compPlugin.createFullMatrix().showDeviationMatrix();
+//		for(DCComponent dc : compPlugin.getUniqueDCComps()) {
+//			System.out.println("Component: " + dc.getName() + " Transitions: " + dc.getTrans());
+//		}
 		//System.out.println("Average trace fitness: FitSum: " + fitSum  + " log size" + (log.size()));
-		GraphBuilder gb = new GraphBuilder(resultsMatrix);
-		//gb.setDeviationSet(allDevSets);
-		//gb.guaranteedCoOccurrenceForTopN(allDevSets, resultsMatrix, 10);
-		gb.runGraphViz();
-		return "Plugin completed";
 		
+		//Das alles in DotFileBuilder machen! RouvensPlaygroundPlugin Instanz erstellen?
+		GraphBuilder gb = new GraphBuilder(resultsMatrix);
+		gb.filterSettings(allDevSets, resultsMatrix, 10);
+		gb.runGraphViz();
+		
+		JPanel jp = new JPanel();
+		Dot dot = gb.getDot();
+		jp.setSize(650, 750);
+		jp.setVisible(true);
+		jp.setName("DotPanel!");
+		DotPanel dp = new DotPanel(dot);
+		dp.setSize(600, 700);
+		dp.setVisible(true);
+		System.out.println("Dp.height: " + dp.getSize().height + " width: "+ dp.getSize().width + " visible" + dp.isVisible()); 
+		System.out.println(dp.isEnabled());
+		//jp.add(dp);
+	    this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+	    this.add(dp);
+	    this.add(new JTextField("asdfasdf", 30), BorderLayout.SOUTH);
+	    this.setSize(400, 320);
+	    this.setVisible(true);
+	    
+		//return gb.runGraphViz();
+	    DotVisualisation dotViz = new DotVisualisation();
+	    dotViz.visualize(context, dot);
+		return dotViz.visualize(context, dot);
 	}
 	
+	public static DeviationMatrix getResultsMatrix() {
+		return resultsMatrix;
+	}
 	
+	public static DeviationSet[] getDevSetArray() {
+		return allDevSets;
+	}
 	
 	private double computeTraceFitness(Replayer replayer, XAttributeMap logAttributes, XTrace trace) {
 		List<String> traceLabelList = BSpaceUtils.traceToLabelList(trace);

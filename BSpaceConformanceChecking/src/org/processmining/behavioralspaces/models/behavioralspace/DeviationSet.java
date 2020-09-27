@@ -63,11 +63,11 @@ public class DeviationSet {
 		 for (Map.Entry<String, Integer> val : sortedMap.entrySet()) {//loop through by alphabet
 			 double devDistr = val.getValue() / noOfTotalDevs;
 			 mapToSort.put(val.getKey(), devDistr);
-	            System.out.println("Element " + val.getKey() + " "
-	                               + "occurs"
-	                               + ": " + val.getValue() + " times"
-	                               + " Deviation Distribution = " + devDistr); 
-	                               
+	         /*System.out.println("Element " + val.getKey() + " "
+	                           + "occurs"
+	                           + ": " + val.getValue() + " times"
+	                           + " Deviation Distribution = " + devDistr); */
+	                           
 		 }
 		
 		 //sort the components in descending order by their values
@@ -143,7 +143,7 @@ public class DeviationSet {
 			if(entry.getKey().equals("No deviating comp for this trace")) {
 				continue;
 			}
-			System.out.println("Component: " + entry.getKey() + " Connectivity: " + entry.getValue());
+			//System.out.println("Component: " + entry.getKey() + " Connectivity: " + entry.getValue());
 			unsortedMap.put(entry.getKey(), entry.getValue());
 		}
 	
@@ -184,9 +184,9 @@ public class DeviationSet {
 		//Step 2: compare
 		Collections.sort(resultList, new HierarchyComparator());
  
-        System.out.println("\n*** After sorting:");
+        //System.out.println("\n*** After sorting:");
         for (MetricsResult res: resultList) {
-            System.out.println(res);
+            //System.out.println(res);
         }
         return resultList;
 	}

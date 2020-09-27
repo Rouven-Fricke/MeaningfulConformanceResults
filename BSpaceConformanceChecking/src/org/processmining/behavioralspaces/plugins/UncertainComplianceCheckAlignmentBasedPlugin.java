@@ -388,14 +388,12 @@ public class UncertainComplianceCheckAlignmentBasedPlugin {
 			//XTraceTranslation tt = bspace.getTranslations().iterator().next();	
 				/*if(this.traceNumber == 5500 && uTransNo == 1) {
 					System.out.print("Unambig: Trace No. " + this.traceNumber + ", ");
-					for(XEvent e : tt.getOriginal()) {
-						System.out.print(classes.getClassOf(e)+ ", ");	
-					}
-					System.out.println();
+					
 				}*/
 					for(int l = 0;l<tt.getMapping().size();l++) {
 						//System.out.println(l + ". Mapping EventList: " + tt.getMapping().get(l) + " - " + tt.getMapping().getActivities());
 					}
+					
 				
 				
 			
@@ -405,6 +403,10 @@ public class UncertainComplianceCheckAlignmentBasedPlugin {
 					unambigComps++;
 					if(uTransNo == 0 && this.traceNumber == 5500) {//only print once, as its the same for all transl.
 						System.out.println("Unambig: Trace No. "+ traceNumber + ", CompName: " + compName + " Compl: " + compl);
+						for(XEvent e : tt.getOriginal()) {
+							System.out.print(classes.getClassOf(e)+ ", ");	
+						}
+						System.out.println();
 					}
 					
 					HashMap<Integer, String> nonCompUnambig = new HashMap<Integer,String>();
@@ -499,13 +501,14 @@ public class UncertainComplianceCheckAlignmentBasedPlugin {
 						}
 						tt.setComponentCompliance(compName, compl);
 						
-						/*if(this.traceNumber == 5500) {
+						if(this.traceNumber == 5500) {
 							System.out.print("Ambig: Trace No. " + this.traceNumber + "Translation No. " + aTransNo + ", ");
 							for(XEvent e : tt.getOriginal()) {//getOriginal always gives the same trace?
 								System.out.print(classes.getClassOf(e)+ ", ");	
 							}
 							System.out.println();
-						}*/
+						}
+						
 						if(!compl) {
 							if(this.traceNumber == 5500) {
 								System.out.println("Ambig: Trace No. "+ traceNumber + "Translation No: " + aTransNo + ", CompName: " + compName + " Compl: " + compl);
@@ -668,7 +671,6 @@ public DeviationMatrix constructDeviationMatrix(DeviationSet[] ds, int traceNo) 
 			for(int j = 1; j<deviatingComps.size() + 1; j++) {
 				matrixEntries[ithComp][j] = "0";//Row
 				matrixEntries[j][deviatingComps.indexOf(singleComponent)+1] = "0";//Column
-				System.out.print(" 0 TIMES with " + deviatingComps.get(j-1));
 			}
 		}
 		for(Map.Entry<String, Integer> val : sortedMap.entrySet()) {//das geht so nicht mehr, müssen alle Components in die Sorted Map nehmen; beachtet die Comps mit 0 nicht
@@ -682,7 +684,6 @@ public DeviationMatrix constructDeviationMatrix(DeviationSet[] ds, int traceNo) 
 			}else {//wenn es mit 0 befüllt wurde durchgehen, bis es zu einer leeren Stelle kommt
 				System.out.print("else bedingung" + ": " + matrixEntries[ithComp][jthComp]);
 				while(matrixEntries[ithComp][jthComp] == "0" /*&& jthComp <= deviatingComps.size() +1*/) {
-					System.out.println("geht weiter");
 					jthComp++;
 				}
 				matrixEntries[ithComp][jthComp] = Integer.toString(val.getValue());

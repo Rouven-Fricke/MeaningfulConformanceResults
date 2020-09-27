@@ -229,7 +229,7 @@ private static String DOT = configFile.getProperty("dotFor" + "Windows");
      try {
          FileOutputStream fos = new FileOutputStream(to);
          for(int i = 0;i<img.length;i++) {
-        	 System.out.println(img[i]);
+        	
          }
          fos.write(img);
          fos.close();
@@ -254,13 +254,13 @@ private static String DOT = configFile.getProperty("dotFor" + "Windows");
          Runtime rt = Runtime.getRuntime();
 
          // patch by Mike Chenault
-         System.out.println("dot.geAbsolutePath: "+ dot.getAbsolutePath());
+         /*System.out.println("dot.geAbsolutePath: "+ dot.getAbsolutePath());
          System.out.println("img.getAbsolutePath:" + img.getAbsolutePath());
          System.out.println("Configfile: " + configFile);
          System.out.println("DOT: "+ DOT);
          System.out.println(configFile.getProperty("dotForWindows"));
          System.out.println("Type: " + type);
-         System.out.println("dpiSizes[this.currentDpiPos: " + dpiSizes[this.currentDpiPos]);
+         System.out.println("dpiSizes[this.currentDpiPos: " + dpiSizes[this.currentDpiPos]);*/
          String[] args = {DOT, "-T"+type, "-Gdpi="+dpiSizes[this.currentDpiPos], dot.getAbsolutePath(), "-o", img.getAbsolutePath()};
          Process p = rt.exec(args);
 
