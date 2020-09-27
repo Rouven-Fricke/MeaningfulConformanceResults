@@ -215,7 +215,7 @@ public class RouvensPlaygroundPlugin extends JFrame{
 		
 		//Das alles in DotFileBuilder machen! RouvensPlaygroundPlugin Instanz erstellen?
 		GraphBuilder gb = new GraphBuilder(resultsMatrix);
-		gb.filterSettings(allDevSets, resultsMatrix, 10);
+		gb.filterSettings(allDevSets, resultsMatrix, 10, "topN", "B0");
 		gb.runGraphViz();
 		
 		JPanel jp = new JPanel();

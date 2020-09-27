@@ -50,38 +50,63 @@ public class GraphBuilder
     }
 	
 	
-	
-	public void filterSettings(DeviationSet[] ds, DeviationMatrix dm, int topN) {
+	//compSelection: depending on the selected mode: TopN, BottomN, usw.
+	public void filterSettings(DeviationSet[] ds, DeviationMatrix dm, int compSelection, String mode, String nthComp) {
 		//config();
 		this.ds = ds;
-		List<MetricsResult> list = DeviationSet.buildHierarchy(ds);
-		List<String> top10 = new ArrayList<String>();
+		List<MetricsResult> list = DeviationSet.buildHierarchy(ds);//we just call this method to get a list of all unique comps
+		List<String> partition = new ArrayList<String>();
 		//for(int i = list.size()-topN; i<list.size();i++) {
-		for(int i = list.size()-1; i>=topN; i--) {
-			top10.add(list.get(i).getCompName());
+		System.out.println("Mode: " + mode);
+		switch(mode) {
+			case "TopN":
+				partition = topNPartition(ds, compSelection);
+				break;
+			case "BottomN":
+				partition = bottomNPartition(ds, compSelection);
+				break;
 		}
-//		for(int i=0;i<top10.size();i++) {
-			//getGraphForSpecificComponent(ds, dm, top10.get(i));//create a graph for each of the specified comps
-			setup(dm, top10);//build the dotFormat String
-//		}
+
+		singleCompToPartition(dm, partition, nthComp);//build the dotFormat String
+	}
+	
+	public List<String> topNPartition(DeviationSet[] ds, int noOfComps){
+		this.ds = ds;
+		List<MetricsResult> list = DeviationSet.buildHierarchy(ds);//we just call this method to get a list of all unique comps
+		List<String> partition = new ArrayList<String>();
+		for(int i = 0; i< noOfComps; i++) {
+			partition.add(list.get(i).getCompName());
+		}
+		return partition;
+	}
+	
+	public List<String> bottomNPartition(DeviationSet[] ds, int noOfComps){
+		this.ds = ds;
+		List<MetricsResult> list = DeviationSet.buildHierarchy(ds);//we just call this method to get a list of all unique comps
+		List<String> partition = new ArrayList<String>();
+		for(int i = list.size()-1; i>=list.size()-noOfComps; i--) {
+			partition.add(list.get(i).getCompName());
+		}
+		return partition;
+	}
+	
+	public List<String> specifiedInterval(DeviationSet[] ds, int start, int end){
+		return new ArrayList<String>();
 	}
 
 	
-	public void setup(DeviationMatrix dm,List<String> topN) {
+	public void singleCompToPartition(DeviationMatrix dm, List<String> partition, String nthComp) {
 		//config();
 		String[][] entries = dm.getMatrixEntries();
 		StringBuilder str = new StringBuilder();
         try{     
             for(int i = 1; i<entries.length; i++) {
-            	if( entries[i][0] == topN.get(5)) {
-            	if(topN.contains(entries[i][0])) {
+            	//if( entries[i][0] == partition.get(nthComp)) {
+            	if(entries[i][0].equals(nthComp)){
+            		//if(partition.contains(entries[i][0])) {
             		for(int j = 1; j< entries.length; j++) {
-            			if(topN.contains(entries[0][j])) {
+            			if(partition.contains(entries[0][j])) {
             			double edgeWeight  = Integer.parseInt(entries[i][j]);
-            			
-            			/*Object v1 = (Object) vertexToStringMapping.get(entries[i][0]);
-            			Object v2 = (Object) vertexToStringMapping.get(entries[0][j]);
-            			*/
             			
             			double totalNoOfDevsOfComp = dm.noOfDevs().get(entries[i][0]);
             			double adjustedEdgeWeight = edgeWeight / totalNoOfDevsOfComp; 
@@ -108,9 +133,11 @@ public class GraphBuilder
             			}
             			}
             		}
-            		}
-            		
+            		//}
             }
+        }catch(IndexOutOfBoundsException e1) {
+        	System.out.println("invalid input");
+        	e1.printStackTrace();
         }
         
         finally

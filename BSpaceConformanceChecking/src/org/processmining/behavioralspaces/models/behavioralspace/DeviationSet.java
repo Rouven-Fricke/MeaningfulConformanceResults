@@ -186,7 +186,7 @@ public class DeviationSet {
  
         //System.out.println("\n*** After sorting:");
         for (MetricsResult res: resultList) {
-            //System.out.println(res);
+            System.out.println(res);
         }
         return resultList;
 	}
