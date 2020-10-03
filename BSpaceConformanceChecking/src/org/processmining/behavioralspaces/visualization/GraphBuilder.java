@@ -51,24 +51,36 @@ public class GraphBuilder
 	
 	
 	//compSelection: depending on the selected mode: TopN, BottomN, usw.
-	public void filterSettings(DeviationSet[] ds, DeviationMatrix dm, int compSelection, String mode, String nthComp) {
+	//nthComp: the component we select from the comboBox
+	public void filterSettings(DeviationSet[] ds, DeviationMatrix dm, int start, int end, String mode, String nthComp, String relationFormat,
+			double lowerBound, double upperBound) {
 		//config();
 		this.ds = ds;
-		List<MetricsResult> list = DeviationSet.buildHierarchy(ds);//we just call this method to get a list of all unique comps
+		//List<MetricsResult> list = DeviationSet.buildHierarchy(ds);//we just call this method to get a list of all unique comps
 		List<String> partition = new ArrayList<String>();
 		//for(int i = list.size()-topN; i<list.size();i++) {
 		System.out.println("Mode: " + mode);
 		switch(mode) {
 			case "TopN":
-				partition = topNPartition(ds, compSelection);
+				partition = topNPartition(ds, start);
 				break;
 			case "BottomN":
-				partition = bottomNPartition(ds, compSelection);
+				partition = bottomNPartition(ds, start);
 				break;
+			case "Specific Interval":
+				partition = specifiedInterval(ds, start, end);
 		}
 
-		singleCompToPartition(dm, partition, nthComp);//build the dotFormat String
+		//build the dotFormat String
+		if(relationFormat.equals("Single Component to the selected partition")) {
+			singleCompToPartition(dm, partition, nthComp, lowerBound, upperBound);//build the dotFormat String
+		}
+		else if(relationFormat.equals("Relation among the components of the partition")) {
+			relationAmongPartition(dm, partition, lowerBound, upperBound);
+		}
+		System.out.println("nthcomp: " + nthComp);
 	}
+	
 	
 	public List<String> topNPartition(DeviationSet[] ds, int noOfComps){
 		this.ds = ds;
@@ -91,11 +103,23 @@ public class GraphBuilder
 	}
 	
 	public List<String> specifiedInterval(DeviationSet[] ds, int start, int end){
-		return new ArrayList<String>();
+		this.ds = ds;
+		List<MetricsResult> list = DeviationSet.buildHierarchy(ds);//we just call this method to get a list of all unique comps
+		List<String> partition = new ArrayList<String>();
+		for(int i = start; i<= end; i++) {
+			partition.add(list.get(i).getCompName());
+		}
+		return partition;
+	}
+	
+	//needed? yes!
+	public List<String> specifiedComps(List<String> compNames){
+		return compNames;
 	}
 
 	
-	public void singleCompToPartition(DeviationMatrix dm, List<String> partition, String nthComp) {
+	
+	public void singleCompToPartition(DeviationMatrix dm, List<String> partition, String nthComp, double lowerBound, double upperBound) {
 		//config();
 		String[][] entries = dm.getMatrixEntries();
 		StringBuilder str = new StringBuilder();
@@ -103,6 +127,54 @@ public class GraphBuilder
             for(int i = 1; i<entries.length; i++) {
             	//if( entries[i][0] == partition.get(nthComp)) {
             	if(entries[i][0].equals(nthComp)){
+            		//if(partition.contains(entries[i][0])) {
+            		for(int j = 1; j< entries.length; j++) {
+            			if(partition.contains(entries[0][j])) {
+            			double edgeWeight  = Integer.parseInt(entries[i][j]);
+            			
+            			double totalNoOfDevsOfComp = dm.noOfDevs().get(entries[i][0]);
+            			double adjustedEdgeWeight = edgeWeight / totalNoOfDevsOfComp; 
+            			String color = " edge [color = blue]"; 
+            			if(adjustedEdgeWeight <=0.2 && edgeWeightInInterval(adjustedEdgeWeight,lowerBound, upperBound)) {
+            				color = " edge [color = red];"; 
+            			}
+            			if(adjustedEdgeWeight > 0.2 && adjustedEdgeWeight <= 0.4) {
+            				color = " edge [color = orange];";
+            			}
+            			if(adjustedEdgeWeight > 0.4 && adjustedEdgeWeight <= 0.6) {
+            				color = " edge [color = green];";
+            			}
+           				if(adjustedEdgeWeight > 0.6 && adjustedEdgeWeight <= 0.8) {
+           					color = " edge [color = blue];"; 
+           				}
+           				if(adjustedEdgeWeight > 0.8 && adjustedEdgeWeight <= 1.0) {
+           					color = " edge [color = black];";
+           				}
+           				//graph.insertEdge(parent, null, adjustedEdgeWeight, v1, v2);
+           				if(edgeWeightInInterval(adjustedEdgeWeight,lowerBound, upperBound)) {
+           					str.append( color + preprocess(entries[i][0]) + "->" + preprocess(entries[0][j]) + "\n"
+               						/*+ "[label = " + adjustedEdgeWeight + "]"*/);
+           				}
+
+            			}
+            			}
+            		}
+            }
+        }catch(IndexOutOfBoundsException e1) {
+        	System.out.println("invalid input");
+        	e1.printStackTrace();
+        }
+        dotFormat = str.toString();
+	}
+	
+	public void relationAmongPartition(DeviationMatrix dm, List<String> partition, double lowerBound, double upperBound) {
+		//config();
+		String[][] entries = dm.getMatrixEntries();
+		StringBuilder str = new StringBuilder();
+        try{     
+            for(int i = 1; i<entries.length; i++) {
+            	if(partition.contains(entries[i][0])) {
+            	//if(entries[i][0].equals(nthComp)){
             		//if(partition.contains(entries[i][0])) {
             		for(int j = 1; j< entries.length; j++) {
             			if(partition.contains(entries[0][j])) {
@@ -127,25 +199,23 @@ public class GraphBuilder
            					color = " edge [color = black];";
            				}
            				//graph.insertEdge(parent, null, adjustedEdgeWeight, v1, v2);
-           				str.append(preprocess(entries[i][0]) + "->" + preprocess(entries[0][j]) + color + "\n"
-           						/*+ "[label = " + adjustedEdgeWeight + "]"*/);
+           				if(edgeWeightInInterval(adjustedEdgeWeight,lowerBound, upperBound)) {
+           					str.append(color + preprocess(entries[i][0]) + "->" + preprocess(entries[0][j]) + "\n"
+               						/*+ "[label = " + adjustedEdgeWeight + "]"*/);
+           				}
+           				
 
             			}
             			}
             		}
-            		//}
             }
         }catch(IndexOutOfBoundsException e1) {
         	System.out.println("invalid input");
         	e1.printStackTrace();
         }
-        
-        finally
-        {
-            //graph.getModel().endUpdate();
-        }
         dotFormat = str.toString();
 	}
+	
 	
 	private void createDotGraph(String dotFormat,String fileName)
 	{
@@ -186,6 +256,15 @@ public class GraphBuilder
 	private String preprocess(String str) {
 		String preprocessed = "\""+str+"\"";
 		return preprocessed;
+	}
+	
+	private boolean edgeWeightInInterval(double edgeWeight, double lowerBound, double upperBound) {
+		if(edgeWeight >= lowerBound && edgeWeight <= upperBound) {
+			System.out.println("edgeWeightInterval: " + true);
+			return true;
+		}
+		System.out.println("edgeWeightInterval: " + false);
+		return false;
 	}
 	
 	//additional method to build a digraph string for graphviz
