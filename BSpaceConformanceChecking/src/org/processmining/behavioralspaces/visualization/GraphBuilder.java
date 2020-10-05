@@ -203,8 +203,6 @@ public class GraphBuilder
            					str.append(color + preprocess(entries[i][0]) + "->" + preprocess(entries[0][j]) + "\n"
                						/*+ "[label = " + adjustedEdgeWeight + "]"*/);
            				}
-           				
-
             			}
             			}
             		}
@@ -232,12 +230,13 @@ public class GraphBuilder
 	    
 	    gv.writeGraphToFile(gv.getGraph(gv.getDotSource(), type), out);
 	}
-	public JFrame runGraphViz() throws IOException {
+	public DotFileBuilder runGraphViz() throws IOException {
 	    createDotGraph(dotFormat, "DotGraph");
 	    //TODO dotFormat verändern zu einem validen dot format
 	    //get it in a JFrame
-	    DotFileBuilder dfb = new DotFileBuilder("C:\\Users\\rouma\\git\\MeaningfulConformanceResults\\BSpaceConformanceChecking\\DotGraph.png");
+	    DotFileBuilder dfb = new DotFileBuilder();
 	    return dfb.showPNG();
+	    //return new DotFileBuilder();
 	}
 	
 	public void refreshImage() {

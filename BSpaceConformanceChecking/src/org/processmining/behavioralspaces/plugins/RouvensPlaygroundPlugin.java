@@ -1,16 +1,13 @@
 package org.processmining.behavioralspaces.plugins;
 
-import java.awt.BorderLayout;
 import java.io.File;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Set;
+
 import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Future;
 
 import javax.swing.JComponent;
 import javax.swing.JFrame;
@@ -29,17 +26,12 @@ import org.deckfour.xes.info.XLogInfo;
 import org.deckfour.xes.info.XLogInfoFactory;
 import org.deckfour.xes.info.impl.XLogInfoImpl;
 import org.deckfour.xes.model.XAttributeMap;
-import org.deckfour.xes.model.XEvent;
 import org.deckfour.xes.model.XLog;
 import org.deckfour.xes.model.XTrace;
-import org.deckfour.xes.model.impl.XEventImpl;
 import org.deckfour.xes.model.impl.XLogImpl;
 import org.processmining.acceptingpetrinet.models.AcceptingPetriNet;
 import org.processmining.acceptingpetrinet.models.impl.AcceptingPetriNetFactory;
 import org.processmining.behavioralspaces.algorithms.TraceToBSpaceTranslator;
-import org.processmining.behavioralspaces.alignmentbased.AlignmentBasedChecker;
-import org.processmining.behavioralspaces.alignmentbased.BenchMarkComplianceSingleModelAndLog;
-import org.processmining.behavioralspaces.evaluation.BSpaceComplianceEvaluator;
 import org.processmining.behavioralspaces.matcher.EventActivityMappings;
 import org.processmining.behavioralspaces.matcher.EventToActivityMapper;
 import org.processmining.behavioralspaces.models.behavioralspace.BSpaceLog;
@@ -49,10 +41,12 @@ import org.processmining.behavioralspaces.models.behavioralspace.MetricsResult;
 import org.processmining.behavioralspaces.models.behavioralspace.TraceBSpace;
 import org.processmining.behavioralspaces.utils.BSpaceUtils;
 import org.processmining.behavioralspaces.utils.IOHelper;
+import org.processmining.behavioralspaces.visualization.DotFileBuilder;
 import org.processmining.behavioralspaces.visualization.GraphBuilder;
-import org.processmining.behavioralspaces.visualization.PresenterFrame;
+import org.processmining.behavioralspaces.plugins.PresenterFrame;
 import org.processmining.contexts.uitopia.UIPluginContext;
 import org.processmining.contexts.uitopia.annotations.UITopiaVariant;
+import org.processmining.contexts.uitopia.annotations.Visualizer;
 import org.processmining.framework.plugin.PluginContext;
 import org.processmining.framework.plugin.annotations.Plugin;
 import org.processmining.framework.plugin.annotations.PluginVariant;
@@ -78,8 +72,8 @@ import org.processmining.plugins.graphviz.dot.Dot;
 import org.processmining.plugins.graphviz.visualisation.*;
 
 @Plugin(name = "Rouven's uncertain conformance checking testbed", parameterLabels = {"Dot"}, 
-returnLabels = { "Meaningful conformance results" }, returnTypes = {DotPanel.class },  userAccessible = true)
-public class RouvensPlaygroundPlugin extends JFrame{
+returnLabels = { "Meaningful conformance results" }, returnTypes = {DotFileBuilder.class },  userAccessible = true)
+public class RouvensPlaygroundPlugin {
 
 	/**
 	 * 
@@ -98,7 +92,7 @@ public class RouvensPlaygroundPlugin extends JFrame{
 	
 	@UITopiaVariant(affiliation = "University of Mannheim", author = "Rouven Fricke", email = "rfricke@mail.uni-mannheim.de")
 	@PluginVariant(variantLabel = "Testbed for Rouven", requiredParameterLabels = {})
-	public JComponent exec(PluginContext context) throws Exception {
+	public DotFileBuilder exec(PluginContext context) throws Exception {
 		
 		// Step 0: load a Petri net and a corresponding event log, plus initalize stuff
 		String caseName ="Artificial - Review - Large";//"Artificial - Loan Process";//BPIC15_1";//"Artificial - Repair"; //"Road_Traffic_Fines_Management_Process"; ////"Artificial - Claims"; //"Artificial - Claims";//"Hospital_log";//"Artificial - Claims";/"Road_Traffic_Fines_Management_Process";//
@@ -214,31 +208,12 @@ public class RouvensPlaygroundPlugin extends JFrame{
 		//System.out.println("Average trace fitness: FitSum: " + fitSum  + " log size" + (log.size()));
 		
 		//Das alles in DotFileBuilder machen! RouvensPlaygroundPlugin Instanz erstellen?
-		GraphBuilder gb = new GraphBuilder(resultsMatrix);
-		gb.filterSettings(allDevSets, resultsMatrix, 10, 0, "topN", resultsMatrix.getMatrixEntries()[0][1],"Single Component to the selected partition", 0.0, 1.0);
-		gb.runGraphViz();
+		//GraphBuilder gb = new GraphBuilder(resultsMatrix);
+		//gb.runGraphViz();
+		//gb.filterSettings(allDevSets, resultsMatrix, 10, 0, "topN", resultsMatrix.getMatrixEntries()[0][1],"Single Component to the selected partition", 0.0, 1.0);
 		
-		JPanel jp = new JPanel();
-		Dot dot = gb.getDot();
-		jp.setSize(650, 750);
-		jp.setVisible(true);
-		jp.setName("DotPanel!");
-		DotPanel dp = new DotPanel(dot);
-		dp.setSize(600, 700);
-		dp.setVisible(true);
-		System.out.println("Dp.height: " + dp.getSize().height + " width: "+ dp.getSize().width + " visible" + dp.isVisible()); 
-		System.out.println(dp.isEnabled());
-		//jp.add(dp);
-	    this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-	    this.add(dp);
-	    this.add(new JTextField("asdfasdf", 30), BorderLayout.SOUTH);
-	    this.setSize(400, 320);
-	    this.setVisible(true);
-	    
-		//return gb.runGraphViz();
-	    DotVisualisation dotViz = new DotVisualisation();
-	    dotViz.visualize(context, dot);
-		return dotViz.visualize(context, dot);
+		PresenterFrame presenter = new PresenterFrame();
+		return presenter.visualize(context, new DotFileBuilder());
 	}
 	
 	public static DeviationMatrix getResultsMatrix() {

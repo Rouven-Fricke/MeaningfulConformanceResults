@@ -36,8 +36,10 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
 import javax.swing.JRadioButton;
+import javax.swing.JScrollPane;
 import javax.swing.JTextField;
 import javax.swing.JTextPane;
+import javax.swing.ScrollPaneConstants;
 
 import org.processmining.behavioralspaces.models.behavioralspace.DeviationMatrix;
 import org.processmining.behavioralspaces.models.behavioralspace.DeviationSet;
@@ -49,7 +51,7 @@ import org.processmining.plugins.graphviz.visualisation.DotVisualisation;
 
 
 
-public class DotFileBuilder extends JFrame	{
+public class DotFileBuilder extends JPanel	{
 	/**
 	 * 
 	 */
@@ -57,9 +59,9 @@ public class DotFileBuilder extends JFrame	{
 	private final String filePath =  "C:\\Users\\rouma\\git\\MeaningfulConformanceResults\\BSpaceConformanceChecking\\DotGraph.png";
 	private Container c;
 	private CardLayout cardLayout;
-	public DotFileBuilder (String filePath) throws IOException{
-		c = this.getContentPane();
-		c.setLayout(new BorderLayout());
+	public DotFileBuilder () throws IOException{
+		//c = this.getContentPane();
+		this.setLayout(new BorderLayout());
 		cardLayout = new CardLayout();
 		JPanel cardLayoutPanel = new JPanel(cardLayout);
 		
@@ -78,6 +80,7 @@ public class DotFileBuilder extends JFrame	{
 		List<String> componentsInPartition = gb.topNPartition(allDevSets, resultsMatrix.getMatrixEntries().length-1);
 		//gb.filterSettings(allDevSets, resultsMatrix, 10, "topN", "B0");
 		Dot dot = gb.getDot();
+		dot.setStringValue("digraph G{ \"choose specifications and press run\" }");
 		DotPanel dp = new DotPanel(dot);
 		dp.setVisible(true);
 		jp.add(dp, BorderLayout.SOUTH);
@@ -91,8 +94,7 @@ public class DotFileBuilder extends JFrame	{
 		jtf.setEditable(false);
 		JTextField jtf2 = new JTextField("5",20);
 		
-		String[] modes = {"Single Component to the selected partition", "Relation among the components of the partition", 
-				"Single Component to all components", "Components of the partition to the universe"};
+		String[] modes = {"Single Component to the selected partition", "Relation among the components of the partition"};
 		JComboBox<String> jcb = new JComboBox<String>(modes);
 		
 		String[] comps = new String[componentsInPartition.size()];
@@ -155,7 +157,7 @@ public class DotFileBuilder extends JFrame	{
 		
 		JButton but = new JButton("Run with specifications");
 		//textPanel.add(popUpMenu);
-		textPanel.add(jtf);
+		//textPanel.add(jtf);
 		textPanel.add(jtf2);
 		textPanel.add(jcb);
 		textPanel.add(jcbPartition);
@@ -242,12 +244,33 @@ public class DotFileBuilder extends JFrame	{
 		jtp.setContentType("text/html");
 		jtp.setEditable(false);
 		jtp.setBackground(new Color(224,224,224));
-		jtp.setText("<html>Edge Colors in relation to the edge weight w:<br /> "
+		jtp.setText("<html> <head>" + 
+				"<style>" + 
+				"body {" + 
+				"  background-color: linen;" + 
+				"}" + 
+				"" + 
+				"h1 {" + 
+				"  color: maroon;" + 
+				"  margin-left: 40px;" + 
+				"}"
+				+ ".boxed {\r\n" + 
+				"  border: 1px solid black ;\r\n" + 
+				"}" + 
+				"</style>\r\n" + 
+				"</head>\r\n" + 
+				"<body>"
+				+ "<div class=\"boxed\">\r\n"
+				+ "<body>"
+				+ "Edge Colors in relation to the edge weight w:<br /> "
 				+ "<font color='red'> w &le; 0.2 = red; </font>"
 				+ "<font color = 'orange'> 0.2 &lt; w &le; 0.4 = orange; </font>"
 				+ "<font color = 'green'> 0.4 &lt; w &le; 0.6 = green </font> <br />"
-				+ "<font color = 'blue'> 0.6 &lt; w &lte; 0.8 = blue;  </font> "
-				+ "<font color = 'black'> 0.8 &lt; w &le; 1.0 = black </font></html>\"");
+				+ "<font color = 'blue'> 0.6 &lt; w &le; 0.8 = blue;  </font> "
+				+ "<font color = 'black'> 0.8 &lt; w &le; 1.0 = black </font>"
+				+ "</div>"
+				+ "</body>"
+				+ "</html>\\\"");
 		
 		
 		cardLayoutPanel.add(jp, "Visualization Card");
@@ -257,9 +280,71 @@ public class DotFileBuilder extends JFrame	{
 		 * Next card: Tables of the hierarchy, metrics, etc.
 		 * =================================================
 		 */
-		JPanel metricsPanel = new JPanel();
-		metricsPanel.add(new JLabel("ASDSFASDFASEDF"));
+		JPanel metricsPanel = new JPanel(new GridLayout(0,2));
+		JTextPane hierarchyPane = new JTextPane();
+		hierarchyPane.setContentType("text/html");
+		hierarchyPane.setEditable(false);
+		hierarchyPane.setBackground(new Color(224,224,224));
+		List<MetricsResult> hierarchyList = DeviationSet.buildHierarchy(allDevSets);
+		String hierarchyString = "";
+		for(MetricsResult res: hierarchyList) {
+			hierarchyString += res.toString() + "<br />";
+		}
+		hierarchyPane.setText("<html> "
+				+ "<head>"
+				+ "<style>"
+				+ ".boxed{"
+				+ "border: 1px solid black ;"
+				+ "}"
+				+ "#id_div_comments p{\r\n" + 
+				" word-wrap:break-word;\r\n" + 
+				"}"
+				+ "</style>"
+				+ "</head>"
+				+ "<body>"
+				+ "<div class=\"boxed\">"
+				+ hierarchyString
+				+ "</div>"
+				+ "</body>"
+				+ "</html>");
 		
+		//computeMatrixMeasure change return type to string
+		//make another pane with the measures either next to the other or in another card layout.
+		JTextPane measuresPane = new JTextPane();
+		measuresPane.setContentType("text/html");
+		measuresPane.setEditable(false);
+		measuresPane.setBackground(new Color(224,224,224));
+		List<String> measuresList = resultsMatrix.computeMatrixMeasures(allDevSets);
+		String stringFormattedForHTML = "";
+		for(String str : measuresList) {
+			stringFormattedForHTML += str + "<br/>";
+		}
+		measuresPane.setText("<html> "
+				+ "<head>"
+				+ "<style>"
+				+ ".boxed{"
+				+ "border: 1px solid black ;"
+				+ "}"
+				+ "#id_div_comments p{"
+				+ "word-wrap:break-word;"
+				+ "}"
+				+ "</style>"
+				+ "</head>"
+				+ "<body>"
+				+ "<div class=\"boxed\">"
+				+ stringFormattedForHTML
+				+"</div>"
+				+ "</body>"
+				+ "</html>");
+		
+		JScrollPane scroller = new JScrollPane();
+		scroller.add(measuresPane);
+		scroller.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
+	    scroller.setViewportView(measuresPane);
+	    scroller.getViewport().add(measuresPane);
+	    //measuresPane.setScrollableWidth(scroller.ScrollableSizeHint.FIT );
+		metricsPanel.add(scroller);
+		metricsPanel.add(hierarchyPane);
 		cardLayoutPanel.add(metricsPanel, "Metrics Card");
 		
 		JButton switchViewsButton = new JButton();
@@ -280,11 +365,11 @@ public class DotFileBuilder extends JFrame	{
 		lowerPanel.add(jtp);
 		lowerPanel.add(switchViewsButton);
 		
-		
-		c.add(cardLayoutPanel, BorderLayout.CENTER);
-		c.add(textPanel, BorderLayout.NORTH);
-		c.add(lowerPanel, BorderLayout.SOUTH);
-		c.setSize(new Dimension(600, icon.getIconWidth()+100));
+		//exchange with c. ...
+		this.add(cardLayoutPanel, BorderLayout.CENTER);
+		this.add(textPanel, BorderLayout.NORTH);
+		this.add(lowerPanel, BorderLayout.SOUTH);
+		this.setSize(new Dimension(600, icon.getIconWidth()+100));
 	
 	}
 	 
@@ -320,11 +405,10 @@ public class DotFileBuilder extends JFrame	{
     	return arr;
 	}
 	
-	public JFrame showPNG() throws IOException {
-		DotFileBuilder dfb = new DotFileBuilder(filePath);
-		dfb.setSize(800,300);
-		dfb.setVisible(true);
-		return dfb; 
+	public DotFileBuilder showPNG() throws IOException {
+		this.setSize(1000,800);
+		this.setVisible(true);
+		return this; 
 	}
 }
 

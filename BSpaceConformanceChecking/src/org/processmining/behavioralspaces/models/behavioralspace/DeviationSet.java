@@ -196,7 +196,6 @@ public class DeviationSet {
 	}
 	
 	public String toString() {
-		
 		return "Deviation Set for Trace No: " + traceNo + " TranslationNo: " + translationNo + " List of deviating comps: " + deviatingCompNames
 				+ " with probability: " + probability;
 	}

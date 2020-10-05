@@ -91,7 +91,8 @@ public class DeviationMatrix {
     	return resMatrix;
     }
     
-    public void computeMatrixMeasures(DeviationSet[] ds) {
+    public List<String> computeMatrixMeasures(DeviationSet[] ds) {
+    	List<String> resultList = new ArrayList<String>(); //used in the visualization to get a list of strings about the measures
     	this.ds = ds;//for the GraphBuilder helper method noOfDevs
     	//could put the first part that counts the occurrences of the single comps in a separate method as we use it twice.
     	List<String> compList = new ArrayList<String>();
@@ -134,17 +135,37 @@ public class DeviationMatrix {
 					 }
 				 }
 			 }
+			 String stringForTwoMeasures = "Element " + entry.getKey() + " co-occurs certainly with: ";
 			 System.out.print("Element " + entry.getKey() + " co-occurs certainly with: ");
+			 int i = 0;
 			 for(String str : guaranteedCoOccurrences) {
+				 if(i < guaranteedCoOccurrences.size()) {
+					 stringForTwoMeasures+= str + ", ";
+				 }else {
+					 stringForTwoMeasures += str; 
+				 }
 				 System.out.print(str + ", ");
+				 i++;
 			 }
+			 resultList.add(stringForTwoMeasures);
 			 System.out.println();
+			 
+			 stringForTwoMeasures = "Element " + entry.getKey() + " is (almost/in more than 80% of all traces) exclusive to: ";
 			 System.out.print("Element " + entry.getKey() + " is (almost/in more than 80% of all traces) exclusive to: ");
+			 i = 0;
 			 for(String str : exclusiveness) {
+				 if(i < exclusiveness.size()) {
+					 stringForTwoMeasures += str + ", ";
+				 }else {
+					 stringForTwoMeasures += str;
+				 }
 				 System.out.print(str + ", ");
+				 i++;
 			 }
+			 resultList.add(stringForTwoMeasures);
 			 System.out.println();
 		 }
+		 return resultList;
     }
     
     public String[][] getMatrixEntries(){
