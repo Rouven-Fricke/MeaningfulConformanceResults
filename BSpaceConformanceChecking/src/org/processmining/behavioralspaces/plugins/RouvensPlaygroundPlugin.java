@@ -32,6 +32,7 @@ import org.deckfour.xes.model.impl.XLogImpl;
 import org.processmining.acceptingpetrinet.models.AcceptingPetriNet;
 import org.processmining.acceptingpetrinet.models.impl.AcceptingPetriNetFactory;
 import org.processmining.behavioralspaces.algorithms.TraceToBSpaceTranslator;
+import org.processmining.behavioralspaces.alignmentbased.BenchMarkComplianceSingleModelAndLog;
 import org.processmining.behavioralspaces.matcher.EventActivityMappings;
 import org.processmining.behavioralspaces.matcher.EventToActivityMapper;
 import org.processmining.behavioralspaces.models.behavioralspace.BSpaceLog;
@@ -39,6 +40,7 @@ import org.processmining.behavioralspaces.models.behavioralspace.DeviationMatrix
 import org.processmining.behavioralspaces.models.behavioralspace.DeviationSet;
 import org.processmining.behavioralspaces.models.behavioralspace.MetricsResult;
 import org.processmining.behavioralspaces.models.behavioralspace.TraceBSpace;
+import org.processmining.behavioralspaces.parameters.BenchmarkEvaluationParameters;
 import org.processmining.behavioralspaces.utils.BSpaceUtils;
 import org.processmining.behavioralspaces.utils.IOHelper;
 import org.processmining.behavioralspaces.visualization.DotFileBuilder;
@@ -95,7 +97,7 @@ public class RouvensPlaygroundPlugin {
 	public DotFileBuilder exec(PluginContext context) throws Exception {
 		
 		// Step 0: load a Petri net and a corresponding event log, plus initalize stuff
-		String caseName ="Artificial - Review - Large";//"Artificial - Loan Process";//BPIC15_1";//"Artificial - Repair"; //"Road_Traffic_Fines_Management_Process"; ////"Artificial - Claims"; //"Artificial - Claims";//"Hospital_log";//"Artificial - Claims";/"Road_Traffic_Fines_Management_Process";//
+		String caseName = "BPI_Challenge_2012";//"Artificial - Review - Large";//"Road_Traffic_Fines_Management_Process"; //"bpi_challenge_2013_incidents";//"Artificial - Claims";//"BPIC15_1";//"Hospital_log";//"Artificial - Repair"; //"Artificial - Loan Process";"Artificial - Claims";//"Artificial - Claims";/"Road_Traffic_Fines_Management_Process";//
 		String netPath = "input/mwe/" + caseName + ".pnml";
 		String logPath = "input/mwe/" + caseName + ".xes";
 		Petrinet net = loadPetrinet(context, netPath);
@@ -115,8 +117,8 @@ public class RouvensPlaygroundPlugin {
 		/*int[] noiseLevel = {40};
 		BenchmarkEvaluationParameters noiseParam = new BenchmarkEvaluationParameters(log.size(), 14, 1,14, noiseLevel , true, true, false, Integer.MAX_VALUE,0.05);
 		BenchMarkComplianceSingleModelAndLog noiseInsertionPlugin = new BenchMarkComplianceSingleModelAndLog(context, net, 40, noiseParam);
-		noiseInsertionPlugin.run();
-		*/
+		noiseInsertionPlugin.run();*/
+		
 		//decomposition
 		SESEDecompositionPlugin decomposer = new SESEDecompositionPlugin();
 		Object[] decompResult = decomposer.decompose(context, net);
@@ -166,7 +168,7 @@ public class RouvensPlaygroundPlugin {
 			for (XTrace interpretation : tbsLog) {
 //				double intFit = computeTraceFitness(replayer, logAttributes, interpretation);
 				//for now just calculate traceFitness as the average fitness value per interpretation, no probabilities considered
-//				traceFitness = traceFitness + intFit / (tbsLog.size()/4);
+//				traceFitness = traceFitness + intFit / (tbsLog.size()/500);
 			}
 			if(i % 50 == 0) {
 				System.out.println(i + " Traces done");
@@ -308,7 +310,7 @@ public class RouvensPlaygroundPlugin {
 		DeviationSet ds[] = new DeviationSet[etams.size()];
 		for(int j = 0; j<etams.size(); j++) {
 			ds[j] = compPlugin.getSingleDevSet(traceNo, j);//create a deviation set for each trace
-			System.out.println(compPlugin.getSingleDevSet(j, j).toString());
+			//System.out.println(compPlugin.getSingleDevSet(j, j).toString());
 		}
 		return ds;
 	}

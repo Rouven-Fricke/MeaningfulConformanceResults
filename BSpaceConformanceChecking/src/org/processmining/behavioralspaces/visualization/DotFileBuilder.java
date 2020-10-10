@@ -41,6 +41,7 @@ import javax.swing.JTextField;
 import javax.swing.JTextPane;
 import javax.swing.ScrollPaneConstants;
 
+import org.apache.commons.lang3.StringUtils;
 import org.processmining.behavioralspaces.models.behavioralspace.DeviationMatrix;
 import org.processmining.behavioralspaces.models.behavioralspace.DeviationSet;
 import org.processmining.behavioralspaces.models.behavioralspace.MetricsResult;
@@ -79,7 +80,8 @@ public class DotFileBuilder extends JPanel	{
 		GraphBuilder gb = new GraphBuilder(resultsMatrix);
 		List<String> componentsInPartition = gb.topNPartition(allDevSets, resultsMatrix.getMatrixEntries().length-1);
 		//gb.filterSettings(allDevSets, resultsMatrix, 10, "topN", "B0");
-		Dot dot = gb.getDot();
+		//Dot dot = gb.getDot();
+		Dot dot = new Dot();
 		dot.setStringValue("digraph G{ \"choose specifications and press run\" }");
 		DotPanel dp = new DotPanel(dot);
 		dp.setVisible(true);
@@ -92,7 +94,7 @@ public class DotFileBuilder extends JPanel	{
 		Color backgroundGray = new Color(245,245,245);
 		jtf.setBackground(backgroundGray);
 		jtf.setEditable(false);
-		JTextField jtf2 = new JTextField("5",20);
+		
 		
 		String[] modes = {"Single Component to the selected partition", "Relation among the components of the partition"};
 		JComboBox<String> jcb = new JComboBox<String>(modes);
@@ -100,6 +102,8 @@ public class DotFileBuilder extends JPanel	{
 		String[] comps = new String[componentsInPartition.size()];
 		comps = componentsInPartition.toArray(comps);
 		JComboBox<String> jcbComps = new JComboBox<String>(comps);
+		
+		JTextField jtf2 = new JTextField(String.valueOf(componentsInPartition.size()),20);
 		
 		JTextField fieldToSpecifiyAnEdgeWeightThreshold = new JTextField("[0,1]");
 
@@ -196,11 +200,12 @@ public class DotFileBuilder extends JPanel	{
 		    String name = (String) jcbComps.getSelectedItem(); //get the form of the partition, i.e. topN, bottomN,...
 		    // Method call String.valueOf(jcbPartition.getSelectedItem()) gets the desired type of relation among the partition, i.e. the mode
 		    String relationFormat = (String) jcb.getSelectedItem();//determines if we want to show only the graph for one component or for all components among the selected partition
-			if(specifiedComponentNames.isEmpty()) {
+			if(specifiedComponentNames.isEmpty() || !jcbPartition.getSelectedItem().equals("Specific Components")) {
 		    	gb.filterSettings(allDevSets, resultsMatrix, start, end, String.valueOf(jcbPartition.getSelectedItem()), name, relationFormat,
 		    			lowerBound, upperBound); //calls setup() to construct dotFormat String
 			}else if(!specifiedComponentNames.isEmpty() && jcbPartition.getSelectedItem().equals("Specific Components")) {
 				gb.relationAmongPartition(resultsMatrix, specifiedComponentNames, lowerBound, upperBound);
+				specifiedComponentNames.clear();
 			}
 		    System.out.println(jcbPartition.getSelectedItem()+"----------");
 			try {
@@ -209,6 +214,14 @@ public class DotFileBuilder extends JPanel	{
 				jp.removeAll();
 				
 				Dot dot = gb.getDot();
+				//Some Bug (where ?) attaches unnecessary digraph G { in front of it and } behind it? Bad fix
+				String dotString = dot.toString();
+				while(dotString.contains("digraph G {")) {
+					dotString = StringUtils.remove(dotString, "digraph G {concentrate=true");
+					dotString = StringUtils.remove(dotString, "}");
+				}
+				System.out.println("while verlassen\n" + dotString);
+				dot = gb.setAndReturnDot("digraph G {concentrate=true" + dotString + "}");
 				DotPanel dp = new DotPanel(dot);
 				dp.setVisible(true);
 				jp.add(dp);
@@ -219,14 +232,7 @@ public class DotFileBuilder extends JPanel	{
 				e1.printStackTrace();
 			}
 			
-			File f = new File("C:\\Users\\rouma\\git\\MeaningfulConformanceResults\\BSpaceConformanceChecking\\DotGraphNEU.png");
-			f.delete();
-			gb.refreshImage();
 			
-			ImageIcon icon = new ImageIcon("C:\\Users\\rouma\\git\\MeaningfulConformanceResults\\BSpaceConformanceChecking\\DotGraphNEU.png"); 
-			
-			label.setIcon(icon); 
-			jp.setPreferredSize(new Dimension(icon.getIconHeight(), icon.getIconWidth()+100));
 			//jp.add(label, BorderLayout.NORTH);
 			//c.add(jp, BorderLayout.CENTER);
 			
@@ -263,11 +269,13 @@ public class DotFileBuilder extends JPanel	{
 				+ "<div class=\"boxed\">\r\n"
 				+ "<body>"
 				+ "Edge Colors in relation to the edge weight w:<br /> "
-				+ "<font color='red'> w &le; 0.2 = red; </font>"
+				+ "<font color='red'> w = 0 = red (Exclusiveness); </font>"
+				+ "<font  style=\"color: rgb(220,20,60)\"> 0 &lt; w &le; 0.2 = crimson; </font>"
 				+ "<font color = 'orange'> 0.2 &lt; w &le; 0.4 = orange; </font>"
 				+ "<font color = 'green'> 0.4 &lt; w &le; 0.6 = green </font> <br />"
 				+ "<font color = 'blue'> 0.6 &lt; w &le; 0.8 = blue;  </font> "
-				+ "<font color = 'black'> 0.8 &lt; w &le; 1.0 = black </font>"
+				+ "<font style=\"color: rgb(0,0,139)\"> 0.8 &lt; w &lt; 1.0 = dark blue;</font>"
+				+ "<font color = 'black'> w = 1.0 = black (Guaranteed Co-occurrence) </font> "
 				+ "</div>"
 				+ "</body>"
 				+ "</html>\\\"");
@@ -308,6 +316,14 @@ public class DotFileBuilder extends JPanel	{
 				+ "</body>"
 				+ "</html>");
 		
+		JScrollPane hierarchyScroller = new JScrollPane();
+		hierarchyScroller.add(hierarchyPane);
+		hierarchyScroller.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
+		hierarchyScroller.setVerticalScrollBarPolicy(ScrollPaneConstants.VERTICAL_SCROLLBAR_NEVER);
+		hierarchyScroller.setViewportView(hierarchyPane);
+		hierarchyScroller.getViewport().add(hierarchyPane);
+		
+		
 		//computeMatrixMeasure change return type to string
 		//make another pane with the measures either next to the other or in another card layout.
 		JTextPane measuresPane = new JTextPane();
@@ -340,11 +356,12 @@ public class DotFileBuilder extends JPanel	{
 		JScrollPane scroller = new JScrollPane();
 		scroller.add(measuresPane);
 		scroller.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
+		//scroller.setVerticalScrollBarPolicy(ScrollPaneConstants.VERTICAL_SCROLLBAR_NEVER);
 	    scroller.setViewportView(measuresPane);
 	    scroller.getViewport().add(measuresPane);
 	    //measuresPane.setScrollableWidth(scroller.ScrollableSizeHint.FIT );
 		metricsPanel.add(scroller);
-		metricsPanel.add(hierarchyPane);
+		metricsPanel.add(hierarchyScroller);
 		cardLayoutPanel.add(metricsPanel, "Metrics Card");
 		
 		JButton switchViewsButton = new JButton();
@@ -388,7 +405,7 @@ public class DotFileBuilder extends JPanel	{
 		double start = 0, end = 0;
 		String enteredText = fieldToSpecifiyAnEdgeWeightThreshold.getText();
 		//String regex = "\\[[0-9]+\\s*,\\s*[0-9]+\\]";
-		String regex = "\\[?[0-9]+([.][0-9])?\\s*,\\s*[0-9]+([.][0-9])?\\]?";
+		String regex = "\\[?[0-9]+([.][0-9]+)?\\s*,\\s*[0-9]+([.][0-9]+)?\\]?";
 
 		if(enteredText.matches(regex)) {
 			String toSplit = enteredText.replace("[", "");

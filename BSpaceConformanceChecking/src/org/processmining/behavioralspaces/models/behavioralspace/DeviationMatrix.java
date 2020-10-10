@@ -118,23 +118,34 @@ public class DeviationMatrix {
 			 mapToSort.put(val.getKey(), devDistr); //Component and how often it deviates in total              
 		 }
 		 
+		
 		 String[][] matrixEntries = this.getMatrixEntries();
 		 for(Map.Entry<String, Integer> entry : sortedMap.entrySet()) {
 			 List<String> guaranteedCoOccurrences = new ArrayList<String>();
 			 List<String> exclusiveness = new ArrayList<String>();
-			 double totalDevs = entry.getValue();
+			 double totalDevs = entry.getValue();//teilweise falsch????
 			 for(int i = 1; i< matrixEntries.length; i++) {
 				 if(matrixEntries[i][0].equals(entry.getKey())) {//only for the respective row of the matrix
+					 //get max
+					 int max = -1;
+					 for(int j = 1;j<matrixEntries.length;j++) {
+						 if(Integer.parseInt(matrixEntries[i][j]) > max) {
+							 max = Integer.parseInt(matrixEntries[i][j]);
+						 }
+					 }
+					 System.out.println("Max: " + max);
 					 for(int j = 1; j< matrixEntries.length; j++) {
-						 if(Double.parseDouble(matrixEntries[i][j]) /  totalDevs == 1.0) {
+						 if(Double.parseDouble(matrixEntries[i][j]) /  max == 1.0) {
 							 guaranteedCoOccurrences.add(matrixEntries[0][j]);
 						 }
-						 if(Double.parseDouble(matrixEntries[i][j]) / totalDevs <= 0.2) {
+						 if(Double.parseDouble(matrixEntries[i][j]) / max <= 0.2) {
 							 exclusiveness.add(matrixEntries[0][j]);
 						 }
+						 System.out.print(", Bruch: " + Double.parseDouble(matrixEntries[i][j]) /  max + " Entry: " +  Double.parseDouble(matrixEntries[i][j]));
 					 }
 				 }
 			 }
+			 System.out.println(" totalDevs: " + totalDevs );
 			 String stringForTwoMeasures = "Element " + entry.getKey() + " co-occurs certainly with: ";
 			 System.out.print("Element " + entry.getKey() + " co-occurs certainly with: ");
 			 int i = 0;
@@ -184,7 +195,7 @@ public class DeviationMatrix {
   	 // Display the TreeMap which is naturally sorted 
   	 /*for (Map.Entry<String, Integer> entry : sorted.entrySet())  
   	     System.out.println("Key = " + entry.getKey() +  
-  	                  ", Value = " + entry.getValue());    */    
+  	                  ", Value = " + entry.getValue()); */ 
   	 return sorted;
   	}
   	
@@ -208,8 +219,23 @@ public class DeviationMatrix {
 		//second: get the occurrences of the individual non-conf comps.
 		LinkedHashMap<String, Integer> mapToSort = new LinkedHashMap<String,Integer>();//ensure the order remains alphabetic over time
 		 for (Map.Entry<String, Integer> val : sortedMap.entrySet()) {//loop through by alphabet
-			int totalDevsOfComp = val.getValue();
-			 mapToSort.put(val.getKey(), totalDevsOfComp); //Component and how often it deviates in total              
+			//int totalDevsOfComp = val.getValue();
+			//mapToSort.put(val.getKey(), totalDevsOfComp); //Component and how often it deviates in total 
+			 
+			//alternatively get the max by running over matrix Entries
+			 System.out.println(val.getKey() + "  ---------------  " + val.getValue());
+			String[][] matrix = this.getMatrixEntries();
+			for(int i = 1;i< matrix.length; i++) {
+				if(matrix[i][0].equals(val.getKey())) { //only go into the correct column
+					int max = -1;
+					for(int j = 1; j < matrix.length; j++) {
+						if(Integer.parseInt(matrix[i][j]) > max) {
+							max = Integer.parseInt(matrix[i][j]);
+						}
+					}
+					mapToSort.put(val.getKey(), max);
+				}
+			}
 		 }
 		return mapToSort;
   	}

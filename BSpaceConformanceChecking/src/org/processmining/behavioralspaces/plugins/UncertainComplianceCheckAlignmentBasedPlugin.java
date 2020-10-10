@@ -316,8 +316,7 @@ public class UncertainComplianceCheckAlignmentBasedPlugin {
 		XLogInfo logInfo = XLogInfoFactory.createLogInfo(log, classifierMap);
 		XLog tempLog = XLogHelper.initializeLog(log);
 		
-		tempLog.add(bspace.getTranslations().iterator().next());//TempLog only the log of the first translation??? 
-		//Test only with the first translations are all the others are the same for unambiguous comps?->Probably yes.
+		tempLog.add(bspace.getTranslations().iterator().next());
 		
 		// instantiate replayer
 		PNLogReplayer replayer = new PNLogReplayer();

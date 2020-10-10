@@ -3,6 +3,7 @@ package org.processmining.behavioralspaces.visualization;
 import javax.swing.JComponent;
 import javax.swing.JFrame;
 
+import org.apache.commons.lang3.StringUtils;
 import org.processmining.behavioralspaces.models.behavioralspace.DeviationMatrix;
 import org.processmining.behavioralspaces.models.behavioralspace.DeviationSet;
 import org.processmining.behavioralspaces.models.behavioralspace.MetricsResult;
@@ -41,7 +42,7 @@ public class GraphBuilder
 	private Object parent;
 	
 	//Dot format String for GraphViz
-	private String dotFormat;
+	private String dotFormat = "";
 	
 	public GraphBuilder(DeviationMatrix dm){
 		//super("Deviation Graph");
@@ -135,8 +136,11 @@ public class GraphBuilder
             			double totalNoOfDevsOfComp = dm.noOfDevs().get(entries[i][0]);
             			double adjustedEdgeWeight = edgeWeight / totalNoOfDevsOfComp; 
             			String color = " edge [color = blue]"; 
-            			if(adjustedEdgeWeight <=0.2 && edgeWeightInInterval(adjustedEdgeWeight,lowerBound, upperBound)) {
+            			if(adjustedEdgeWeight == 0.0) {
             				color = " edge [color = red];"; 
+            			}
+            			if(adjustedEdgeWeight <=0.2 && adjustedEdgeWeight != 0.0) {
+            				color = " edge [color = crimson];"; 
             			}
             			if(adjustedEdgeWeight > 0.2 && adjustedEdgeWeight <= 0.4) {
             				color = " edge [color = orange];";
@@ -147,7 +151,10 @@ public class GraphBuilder
            				if(adjustedEdgeWeight > 0.6 && adjustedEdgeWeight <= 0.8) {
            					color = " edge [color = blue];"; 
            				}
-           				if(adjustedEdgeWeight > 0.8 && adjustedEdgeWeight <= 1.0) {
+           				if(adjustedEdgeWeight > 0.8 && adjustedEdgeWeight < 1.0) {
+           					color = " edge [color = blue4];";
+           				}
+           				if(adjustedEdgeWeight == 1.0) {
            					color = " edge [color = black];";
            				}
            				//graph.insertEdge(parent, null, adjustedEdgeWeight, v1, v2);
@@ -183,8 +190,11 @@ public class GraphBuilder
             			double totalNoOfDevsOfComp = dm.noOfDevs().get(entries[i][0]);
             			double adjustedEdgeWeight = edgeWeight / totalNoOfDevsOfComp; 
             			String color = " edge [color = blue]"; 
-            			if(adjustedEdgeWeight <=0.2) {
+            			if(adjustedEdgeWeight == 0.0) {
             				color = " edge [color = red];"; 
+            			}
+            			if(adjustedEdgeWeight <=0.2 && adjustedEdgeWeight != 0.0) {
+            				color = " edge [color = crimson];"; 
             			}
             			if(adjustedEdgeWeight > 0.2 && adjustedEdgeWeight <= 0.4) {
             				color = " edge [color = orange];";
@@ -195,7 +205,10 @@ public class GraphBuilder
            				if(adjustedEdgeWeight > 0.6 && adjustedEdgeWeight <= 0.8) {
            					color = " edge [color = blue];"; 
            				}
-           				if(adjustedEdgeWeight >0.8 && adjustedEdgeWeight <= 1.0) {
+           				if(adjustedEdgeWeight > 0.8 && adjustedEdgeWeight < 1.0) {
+           					color = " edge [color = blue4];";
+           				}
+           				if(adjustedEdgeWeight == 1.0) {
            					color = " edge [color = black];";
            				}
            				//graph.insertEdge(parent, null, adjustedEdgeWeight, v1, v2);
@@ -245,10 +258,20 @@ public class GraphBuilder
 	}
 	
 	public Dot getDot() throws IOException{
-		dotFormat = "digraph G {" + dotFormat + "}";
+		System.out.println("Dotformat substring:" + dotFormat.substring(0, 2));
+		if(!dotFormat.substring(0, 1).equals("di")) {
+			System.out.println("Dotformat substring:" + dotFormat.substring(0, 2) + "in if");
+			dotFormat = "digraph G {concentrate=true" + dotFormat + "}";
+		}
 		InputStream targetStream = new ByteArrayInputStream(dotFormat.getBytes());
 		Dot dot = new Dot(targetStream);
-		System.out.println("--------------------\n" + dot.toString());
+		//System.out.println("--------------------\n" + dot.toString());
+		return dot;
+	}
+	
+	public Dot setAndReturnDot(String str) throws IOException{
+		InputStream targetStream  = new ByteArrayInputStream(str.getBytes());
+		Dot dot = new Dot(targetStream);
 		return dot;
 	}
 	
