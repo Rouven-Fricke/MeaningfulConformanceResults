@@ -245,23 +245,25 @@ public class UncertainComplianceCheckAlignmentBasedPlugin {
 
 		TraceToBSpaceTranslator translator = new TraceToBSpaceTranslator(etams);
 		
-		
-		for (int  i= 0; i<log.size();i+=500) {
+		ArrayList<XTrace> traceList = RouvensPlaygroundPlugin.getUsedTraces(); 
+		ArrayList<Integer> traceNumberList = RouvensPlaygroundPlugin.getTraceNumbers();
+
+
+		for(int i = 0; i < traceNumberList.size(); i++) {
+		//for(XTrace trace : traceList) {
+		//for (int  i= 0; i<log.size();i+=500) {
 		//int i  = 0;
 		//for(XTrace t : log) {
 			
 			TraceBSpace tbs = translator.translateToBSpace(log.get(i));
-			//TraceBSpace tbs = translator.translateToBSpace(t);	
+			//TraceBSpace tbs = translator.translateToBSpace(trace);	
 			bspaceLog.add(tbs);
 			checkConformance(context, tbs, ambiguousComponents, unambiguousComponents, mode);
-			this.traceNumber = i;
-			
-			//i++;
-		
-			/*if (i % 5000 == 0) {
-					System.out.println(i + "TRACES checked for: " + net.getLabel() + " " + etams.size() + " interpretations");
-			}*/
+			this.traceNumber = traceNumberList.get(i);
+			System.out.println(traceNumberList.get(i));
+
 		}
+		
 		return bspaceLog;
 	}
 	
@@ -510,7 +512,7 @@ public class UncertainComplianceCheckAlignmentBasedPlugin {
 						
 						if(!compl) {
 							if(this.traceNumber == 5500) {
-								System.out.println("Ambig: Trace No. "+ traceNumber + "Translation No: " + aTransNo + ", CompName: " + compName + " Compl: " + compl);
+								//System.out.println("Ambig: Trace No. "+ traceNumber + "Translation No: " + aTransNo + ", CompName: " + compName + " Compl: " + compl);
 							}
 							
 							HashMap<Integer, String> nonCompAmbig = new HashMap<Integer, String>();
@@ -660,7 +662,7 @@ public DeviationMatrix constructDeviationMatrix(DeviationSet[] ds, int traceNo) 
 			//devSet.getNumberedCoOccurrences(singleComponent, hm);
 			getNumberedCoOccurrences2(singleComponent, hm, devSet);
 		}
-		System.out.print("Element " + singleComponent + " co-occurs: ");
+		//System.out.print("Element " + singleComponent + " co-occurs: ");
 		jthComp = 1;
 		//matrixEntries[ithComp][0] = singleComponent;
 		int counter = 1;
@@ -676,12 +678,12 @@ public DeviationMatrix constructDeviationMatrix(DeviationSet[] ds, int traceNo) 
 		//for (Map.Entry<String, Integer> val : hm.entrySet()) {
 			
 			//plus also fill the deviation matrix
-			System.out.print(val.getValue() + " times with " + val.getKey() + ", ");
+			//System.out.print(val.getValue() + " times with " + val.getKey() + ", ");
 			//fill matrix
 			if(matrixEntries[ithComp][jthComp] == null) {//nur wenn es vorher noch nicht mit 0 befüllt wurde
 				matrixEntries[ithComp][jthComp] = Integer.toString(val.getValue());
 			}else {//wenn es mit 0 befüllt wurde durchgehen, bis es zu einer leeren Stelle kommt
-				System.out.print("else bedingung" + ": " + matrixEntries[ithComp][jthComp]);
+				//System.out.print("else bedingung" + ": " + matrixEntries[ithComp][jthComp]);
 				while(matrixEntries[ithComp][jthComp] == "0" /*&& jthComp <= deviatingComps.size() +1*/) {
 					jthComp++;
 				}

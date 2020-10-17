@@ -23,6 +23,6 @@ public class PresenterFrame {
 	@Visualizer
 	public DotFileBuilder visualize(PluginContext context, DotFileBuilder dt) throws IOException {
 		System.out.println("=======Started visualization Plugin================");
-		return dt.showPNG();
+		return dt.showVisualization();
 	}
 }

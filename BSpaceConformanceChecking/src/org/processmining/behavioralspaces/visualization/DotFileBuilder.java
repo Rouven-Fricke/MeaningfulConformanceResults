@@ -167,7 +167,7 @@ public class DotFileBuilder extends JPanel	{
 		textPanel.add(jcbPartition);
 		textPanel.add(jcbComps);
 		textPanel.add(fieldToSpecifiyAnEdgeWeightThreshold);
-		System.out.println(provideThresholdInterval(fieldToSpecifiyAnEdgeWeightThreshold)[0] + " " + provideThresholdInterval(fieldToSpecifiyAnEdgeWeightThreshold)[1] );
+		//System.out.println(provideThresholdInterval(fieldToSpecifiyAnEdgeWeightThreshold)[0] + " " + provideThresholdInterval(fieldToSpecifiyAnEdgeWeightThreshold)[1] );
 		textPanel.add(but);
 		but.addActionListener(new ActionListener()
 		{
@@ -179,8 +179,8 @@ public class DotFileBuilder extends JPanel	{
 			int start = 0, end = 0;
 			if(textIndicatesInterval(jtf2)) {
 				String[] splitted = jtf2.getText().split("\\s*,\\s*");
-		    	start = Integer.valueOf(splitted[0]);
-		    	end = Integer.valueOf(splitted[1]);
+		    	start = Integer.valueOf(splitted[0].replace("[", ""));
+		    	end = Integer.valueOf(splitted[1].replace("]", ""));
 			}
 			else if(!textIndicatesInterval(jtf2)) {
 				start = Integer.valueOf(jtf2.getText());
@@ -193,7 +193,7 @@ public class DotFileBuilder extends JPanel	{
 		    Double[] intervalForMetrics = provideThresholdInterval(fieldToSpecifiyAnEdgeWeightThreshold);
 		    double lowerBound = intervalForMetrics[0];
 		    double upperBound = intervalForMetrics[1];
-		    System.out.println(lowerBound + "   " + upperBound + " from field: " + fieldToSpecifiyAnEdgeWeightThreshold.getText());
+		    //System.out.println(lowerBound + "   " + upperBound + " from field: " + fieldToSpecifiyAnEdgeWeightThreshold.getText());
 		    if(jcbPartition.getSelectedItem().equals("Specific Components")) {
 		    	popUpMenu.setVisible(true);
 		    }
@@ -220,7 +220,6 @@ public class DotFileBuilder extends JPanel	{
 					dotString = StringUtils.remove(dotString, "digraph G {concentrate=true");
 					dotString = StringUtils.remove(dotString, "}");
 				}
-				System.out.println("while verlassen\n" + dotString);
 				dot = gb.setAndReturnDot("digraph G {concentrate=true" + dotString + "}");
 				DotPanel dp = new DotPanel(dot);
 				dp.setVisible(true);
@@ -246,6 +245,32 @@ public class DotFileBuilder extends JPanel	{
 		jp.revalidate();
 		
 		JPanel lowerPanel = new JPanel();
+		String maxNoOfComps = String.valueOf(componentsInPartition.size());
+		JTextPane explanationPane = new JTextPane();
+		explanationPane.setContentType("text/html");
+		explanationPane.setEditable(false);
+		explanationPane.setBackground(new Color(224,224,224));
+		explanationPane.setText("<html> <head>"
+				+ "<style>"
+				+ "body { background-color: linen; }"
+				+ "h1 {"
+				+ "color: maroon;"
+				+ "margin-left: 40px;"
+				+ "}"
+				+ ".boxed{"
+				+ "border: 1px solid black;"
+				+ "}"
+				+ "</sytle>"
+				+ "</head>"
+				+ "<body>"
+				+ "<div class=\"boxed\">"
+				+ "<body>"
+				+ "Maximum number of components to specify in top right text field: " + maxNoOfComps + "<br/>"
+				+ "Intevals can be specified in the top and bottom left text fields in brackets [x,y] or without. <br/>"
+				+ "Values must be separated by a comma."
+				+ "</div>"
+				+ "</body>"
+				+ "</html>");
 		JTextPane jtp = new JTextPane();
 		jtp.setContentType("text/html");
 		jtp.setEditable(false);
@@ -349,20 +374,97 @@ public class DotFileBuilder extends JPanel	{
 				+ "<body>"
 				+ "<div class=\"boxed\">"
 				+ stringFormattedForHTML
+				/*resultsMatrix.getVisualRepresentationOfMatrix()*/
 				+"</div>"
 				+ "</body>"
 				+ "</html>");
 		
 		JScrollPane scroller = new JScrollPane();
 		scroller.add(measuresPane);
-		scroller.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
-		//scroller.setVerticalScrollBarPolicy(ScrollPaneConstants.VERTICAL_SCROLLBAR_NEVER);
+		scroller.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_ALWAYS);
+		scroller.setVerticalScrollBarPolicy(ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS);
 	    scroller.setViewportView(measuresPane);
 	    scroller.getViewport().add(measuresPane);
 	    //measuresPane.setScrollableWidth(scroller.ScrollableSizeHint.FIT );
 		metricsPanel.add(scroller);
 		metricsPanel.add(hierarchyScroller);
 		cardLayoutPanel.add(metricsPanel, "Metrics Card");
+		
+		/**
+		 * ==========================
+		 * New card for the deviation Matrix
+		 * ==========================
+		 */
+		/*JPanel deviationMatrixPanel = new JPanel();
+		JTextPane deviationMatrixPane = new JTextPane();
+		String devString = resultsMatrix.getVisualRepresentationOfMatrix();
+		deviationMatrixPane.setContentType("text/html");
+		deviationMatrixPane.setEditable(false);
+		deviationMatrixPane.setBackground(new Color(224,224,224));
+		deviationMatrixPane.setText(devString);
+		deviationMatrixPanel.add(deviationMatrixPane);
+		
+		
+		JScrollPane devScroller = new JScrollPane();
+		devScroller.add(deviationMatrixPane);
+		//devScroller.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_ALWAYS);
+		devScroller.setVerticalScrollBarPolicy(ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS);
+		//devScroller.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_ALWAYS);
+		devScroller.setViewportView(deviationMatrixPane);
+		devScroller.getViewport().add(deviationMatrixPane);
+	    //deviationMatrixPane.setScrollableWidth(devScroller.ScrollableSizeHint.FIT );
+		deviationMatrixPanel.add(devScroller);
+		deviationMatrixPanel.setVisible(true);
+		cardLayoutPanel.add(deviationMatrixPanel, "Deviation Matrix Card");*/
+		
+		JPanel devPanel = new JPanel(new GridLayout(0,1));
+		JTextPane devPane = new JTextPane();
+		devPane.setContentType("text/html");
+		devPane.setEditable(false);
+		devPane.setBackground(new Color(224,224,224));
+		//List<String> measuresList = resultsMatrix.computeMatrixMeasures(allDevSets);
+		//7String stringFormattedForHTML = "";
+		//for(String str : measuresList) {
+			//stringFormattedForHTML += str + "<br/>";
+		//}
+		devPane.setText("<html> "
+				+ "<head>"
+				+ "<style>"
+				+ ".boxed{"
+				+ "border: 1px solid black ;"
+				+ "}"
+				+ "table, th, td {\r\n"  
+				+ "  border: 1px solid black;\r\n"  
+				+ "  border-collapse: collapse;\r\n"  
+				+ "}"
+				+ "th, td {\r\n"
+				+ "  padding: 15px;\r\n"
+				+ "}"
+				+ "#id_div_comments p{"
+				+ "word-wrap:break-word;"
+				+ "}"
+				+ "</style>"
+				+ "</head>"
+				+ "<body>"
+				+ "<div class=\"boxed\">"
+				+ resultsMatrix.getVisualRepresentationOfMatrix()
+				/*resultsMatrix.getVisualRepresentationOfMatrix()*/
+				+"</div>"
+				+ "</body>"
+				+ "</html>");
+		
+		JScrollPane devScroller = new JScrollPane();
+		devScroller.add(devPane);
+		devScroller.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_ALWAYS);
+		devScroller.setVerticalScrollBarPolicy(ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS);
+		devScroller.setViewportView(devPane);
+		devScroller.getViewport().add(devPane);
+	    //measuresPane.setScrollableWidth(scroller.ScrollableSizeHint.FIT );
+		devPanel.add(devScroller);
+		cardLayoutPanel.add(devPanel, "Deviation Matrix Card");
+		
+		
+		
 		
 		JButton switchViewsButton = new JButton();
 		switchViewsButton.setText("Switch to Metrics");
@@ -371,6 +473,9 @@ public class DotFileBuilder extends JPanel	{
 			public void actionPerformed(ActionEvent arg0) {
 				CardLayout cardLayout = (CardLayout) cardLayoutPanel.getLayout();
 				if(switchViewsButton.getText().equals("Switch to Metrics")) {
+					switchViewsButton.setText("Switch to Deviation Matrix");
+				}
+				else if(switchViewsButton.getText().equals("Switch to Deviation Matrix")){
 					switchViewsButton.setText("Switch to Visualization");
 				}
 				else {
@@ -379,6 +484,7 @@ public class DotFileBuilder extends JPanel	{
 				cardLayout.next(cardLayoutPanel);
 			}
 		});
+		lowerPanel.add(explanationPane);
 		lowerPanel.add(jtp);
 		lowerPanel.add(switchViewsButton);
 		
@@ -392,7 +498,7 @@ public class DotFileBuilder extends JPanel	{
 	 
 	private boolean textIndicatesInterval(JTextField jtf) {
 		String enteredText = jtf.getText();
-		String  regex = "[0-9]+\\s*,\\s*[0-9]+";//any number, whitespaces* a comma (','), whitespaces*, any number.
+		String  regex = "\\[?[0-9]+\\s*,\\s*[0-9]+\\]?";//any number, whitespaces* a comma (','), whitespaces*, any number.
 		//check if we want to test an interval or just a single number
 		if(enteredText.matches(regex)) {
 			return true;
@@ -422,7 +528,7 @@ public class DotFileBuilder extends JPanel	{
     	return arr;
 	}
 	
-	public DotFileBuilder showPNG() throws IOException {
+	public DotFileBuilder showVisualization() throws IOException {
 		this.setSize(1000,800);
 		this.setVisible(true);
 		return this; 

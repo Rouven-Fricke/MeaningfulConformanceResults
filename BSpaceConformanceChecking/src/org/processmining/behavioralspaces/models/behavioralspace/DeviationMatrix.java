@@ -58,6 +58,46 @@ public class DeviationMatrix {
         }
     }
     
+    public String getVisualRepresentationOfMatrix() {
+    	StringBuilder builder = new StringBuilder();
+    	builder.append("<table style=\"width:100%\">");
+    	for (int i = 0; i < M; i++) {
+    		 builder.append("<tr>");
+             for (int j = 0; j < N; j++) { 
+                 
+             	//System.out.print(String.format("%1$4s", data[i][j])); used only for integer
+             	//builder.append(String.format("%1$4s", data[i][j]) + "<br/>");
+            	 if(i == 0) {
+             		//System.out.print(StringUtils.leftPad(data[i][j], 30));
+            		 builder.append("<th>");
+             		builder.append(data[i][j]);
+             		builder.append("</th>");
+             		int length = 40 - data[i][j].length();
+             		System.out.println("Data[i][j]: " + data[i][j] + " length: "+ data[i][j].length()+ "40 - length = " + length );
+             		/*for(int count = 0; count < 40 - data[i][j].length()*2; count++) {
+             			builder.append("&#160;");
+             		}*/
+             	}
+             	else {
+             		//System.out.print(StringUtils.leftPad(data[i][j], 30));
+             		builder.append("<td>");
+             		builder.append(data[i][j]);
+             		builder.append("</td>");
+             		int length = 40 - data[i][j].length();
+             		System.out.println("Data[i][j]: " + data[i][j] + " length: "+ data[i][j].length() + "40 - length = " + length );
+             		/*for(int count = 0; count < 40 - data[i][j-1].length()*2; count++) {
+                 		builder.append("&#160;");
+             		}*/
+             	}
+             }
+             builder.append("</tr>");
+             //builder.append("<br/>");
+         
+    	 }
+    	builder.append("</table>");
+    	 return builder.toString(); 
+    }
+    
     public DeviationMatrix addMatrix(DeviationMatrix dm) {
     	String[][] firstMatrix = this.data;
     	String[][] secondMatrix = dm.data;
@@ -133,7 +173,6 @@ public class DeviationMatrix {
 							 max = Integer.parseInt(matrixEntries[i][j]);
 						 }
 					 }
-					 System.out.println("Max: " + max);
 					 for(int j = 1; j< matrixEntries.length; j++) {
 						 if(Double.parseDouble(matrixEntries[i][j]) /  max == 1.0) {
 							 guaranteedCoOccurrences.add(matrixEntries[0][j]);
@@ -141,11 +180,11 @@ public class DeviationMatrix {
 						 if(Double.parseDouble(matrixEntries[i][j]) / max <= 0.2) {
 							 exclusiveness.add(matrixEntries[0][j]);
 						 }
-						 System.out.print(", Bruch: " + Double.parseDouble(matrixEntries[i][j]) /  max + " Entry: " +  Double.parseDouble(matrixEntries[i][j]));
+						 
 					 }
 				 }
 			 }
-			 System.out.println(" totalDevs: " + totalDevs );
+
 			 String stringForTwoMeasures = "Element " + entry.getKey() + " co-occurs certainly with: ";
 			 System.out.print("Element " + entry.getKey() + " co-occurs certainly with: ");
 			 int i = 0;
@@ -223,7 +262,7 @@ public class DeviationMatrix {
 			//mapToSort.put(val.getKey(), totalDevsOfComp); //Component and how often it deviates in total 
 			 
 			//alternatively get the max by running over matrix Entries
-			 System.out.println(val.getKey() + "  ---------------  " + val.getValue());
+			//System.out.println(val.getKey() + "  ---------------  " + val.getValue());
 			String[][] matrix = this.getMatrixEntries();
 			for(int i = 1;i< matrix.length; i++) {
 				if(matrix[i][0].equals(val.getKey())) { //only go into the correct column

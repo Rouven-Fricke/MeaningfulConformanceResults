@@ -248,7 +248,7 @@ public class GraphBuilder
 	    //TODO dotFormat verändern zu einem validen dot format
 	    //get it in a JFrame
 	    DotFileBuilder dfb = new DotFileBuilder();
-	    return dfb.showPNG();
+	    return dfb.showVisualization();
 	    //return new DotFileBuilder();
 	}
 	
@@ -258,9 +258,7 @@ public class GraphBuilder
 	}
 	
 	public Dot getDot() throws IOException{
-		System.out.println("Dotformat substring:" + dotFormat.substring(0, 2));
 		if(!dotFormat.substring(0, 1).equals("di")) {
-			System.out.println("Dotformat substring:" + dotFormat.substring(0, 2) + "in if");
 			dotFormat = "digraph G {concentrate=true" + dotFormat + "}";
 		}
 		InputStream targetStream = new ByteArrayInputStream(dotFormat.getBytes());
@@ -282,10 +280,8 @@ public class GraphBuilder
 	
 	private boolean edgeWeightInInterval(double edgeWeight, double lowerBound, double upperBound) {
 		if(edgeWeight >= lowerBound && edgeWeight <= upperBound) {
-			System.out.println("edgeWeightInterval: " + true);
 			return true;
 		}
-		System.out.println("edgeWeightInterval: " + false);
 		return false;
 	}
 	
