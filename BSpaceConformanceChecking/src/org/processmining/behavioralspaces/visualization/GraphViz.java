@@ -100,7 +100,7 @@ private static String TEMP_DIR = "/Users/rouma/git/MeaningfulConformanceResults/
  /**
   * Where is your dot program located? It will be called externally.
   */
-private static String DOT = configFile.getProperty("dotFor" + "Windows");
+private static String DOT = configFile.getProperty("dotFor" + osName);
 
  /**
   * The image size in dpi. 96 dpi is normal size. Higher values are 10% higher each.

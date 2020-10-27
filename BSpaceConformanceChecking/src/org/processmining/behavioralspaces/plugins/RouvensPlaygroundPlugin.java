@@ -64,7 +64,7 @@ public class RouvensPlaygroundPlugin {
 	
 	private DCComponents components;
 	private DCDecomposition decomposition;
-	private int traceNo = 0;
+
 	private UncertainComplianceCheckAlignmentBasedPlugin compPlugin;
 	private static DeviationMatrix resultsMatrix;
 	private static DeviationSet[] allDevSets;
@@ -77,7 +77,8 @@ public class RouvensPlaygroundPlugin {
 	public DotFileBuilder exec(PluginContext context) throws Exception {
 		
 		// Step 0: load a Petri net and a corresponding event log, plus initalize stuff
-		String caseName ="Artificial - Review - Large";//"Road_Traffic_Fines_Management_Process"; //"BPI_Challenge_2012";// "bpi_challenge_2013_incidents";//"Artificial - Claims";//"BPIC15_1";//"Hospital_log";//"Artificial - Repair"; //"Artificial - Loan Process";"Artificial - Claims";//"Artificial - Claims";/"Road_Traffic_Fines_Management_Process";//
+		//specify the name of the log and petri net as the caseName.
+		String caseName ="Road_Traffic_Fines_Management_Process"; //"Artificial - Review - Large";//"BPI_Challenge_2012";// "bpi_challenge_2013_incidents";//"Artificial - Claims";//"BPIC15_1";//"Hospital_log";//"Artificial - Repair"; //"Artificial - Loan Process";"Artificial - Claims";//"Artificial - Claims";/"Road_Traffic_Fines_Management_Process";//
 		String netPath = "input/mwe/" + caseName + ".pnml";
 		String logPath = "input/mwe/" + caseName + ".xes";
 		Petrinet net = loadPetrinet(context, netPath);
@@ -96,8 +97,8 @@ public class RouvensPlaygroundPlugin {
 		//decomposition
 		SESEDecompositionPlugin decomposer = new SESEDecompositionPlugin();
 		Object[] decompResult = decomposer.decompose(context, net);
-		decomposition = (DCDecomposition) decompResult[0];
-		components = (DCComponents) decompResult[1];
+		this.decomposition = (DCDecomposition) decompResult[0];
+		this.components = (DCComponents) decompResult[1];
 		
 		// Step 1: establish the possible event-to-activity mappings (leave parameters as is for the moment)
 		boolean loadEtamFromSER = true;
@@ -249,7 +250,7 @@ public class RouvensPlaygroundPlugin {
 			System.out.println("Tracefitness: " + traceFitness + " ~ Avg: " + fitSum / traceCounter + " " + traceCounter);
 			fitValuesList.add(fitSum / traceCounter );
 			System.out.println(traceCounter);
-			if(fitValuesList.size() > 46) {
+			if(fitValuesList.size() > 20) {
 				for(int count = fitValuesList.size()-11; count < fitValuesList.size()-1; count++) {
 					if(Math.abs(fitValuesList.get(count) - fitValuesList.get(count + 1)) <= 0.01) {
 						System.out.print(Math.abs(fitValuesList.get(count) - fitValuesList.get(count + 1)) + " ");
@@ -264,8 +265,12 @@ public class RouvensPlaygroundPlugin {
 					}
 				}
 			}
-
+			
 		}
+			if(log.size() < 20 && traceSet.size() == log.size()) {
+				System.out.println("JAAAAAAAAAAAAAAAAAAAAAAA");
+				enoughTraces = true;
+			}
 		}
 		
 		// Loop over traces in event log

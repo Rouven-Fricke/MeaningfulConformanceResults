@@ -3,39 +3,25 @@ package org.processmining.behavioralspaces.visualization;
 import java.awt.BorderLayout;
 import java.awt.CardLayout;
 import java.awt.Color;
-import java.awt.Component;
 import java.awt.Container;
 import java.awt.Dimension;
-import java.awt.GridBagConstraints;
-import java.awt.GridBagLayout;
 import java.awt.GridLayout;
-import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.event.ComponentEvent;
-import java.awt.event.ComponentListener;
-import java.awt.event.FocusEvent;
-import java.awt.event.FocusListener;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
-import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
-
-import javax.swing.DefaultComboBoxModel;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
-import javax.swing.JComponent;
-import javax.swing.JDialog;
-import javax.swing.JFrame;
+
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
-import javax.swing.JRadioButton;
+
 import javax.swing.JScrollPane;
 import javax.swing.JTextField;
 import javax.swing.JTextPane;
@@ -48,7 +34,6 @@ import org.processmining.behavioralspaces.models.behavioralspace.MetricsResult;
 import org.processmining.behavioralspaces.plugins.RouvensPlaygroundPlugin;
 import org.processmining.plugins.graphviz.dot.Dot;
 import org.processmining.plugins.graphviz.visualisation.DotPanel;
-import org.processmining.plugins.graphviz.visualisation.DotVisualisation;
 
 
 
@@ -57,7 +42,7 @@ public class DotFileBuilder extends JPanel	{
 	 * 
 	 */
 	private static final long serialVersionUID = 1L;
-	private final String filePath =  "C:\\Users\\rouma\\git\\MeaningfulConformanceResults\\BSpaceConformanceChecking\\DotGraph.png";
+	//private final String filePath =  "C:\\Users\\rouma\\git\\MeaningfulConformanceResults\\BSpaceConformanceChecking\\DotGraph.png";
 	private Container c;
 	private CardLayout cardLayout;
 	public DotFileBuilder () throws IOException{
@@ -68,10 +53,10 @@ public class DotFileBuilder extends JPanel	{
 		
 		JPanel jp= new JPanel(new GridLayout(1,0)); 
 		jp.setBackground(Color.WHITE); 
-		ImageIcon icon = new ImageIcon(filePath); 
-		jp.setPreferredSize(new Dimension(icon.getIconHeight(), icon.getIconWidth()+100));
+		//ImageIcon icon = new ImageIcon(/*filePath*/); 
+		//jp.setPreferredSize(new Dimension(icon.getIconHeight(), icon.getIconWidth()+100));
 		JLabel label = new JLabel(); 
-		label.setIcon(icon); 
+		//label.setIcon(icon); 
 		//jp.add(label, BorderLayout.NORTH);
 		
 		DeviationMatrix resultsMatrix = RouvensPlaygroundPlugin.getResultsMatrix();
@@ -492,7 +477,7 @@ public class DotFileBuilder extends JPanel	{
 		this.add(cardLayoutPanel, BorderLayout.CENTER);
 		this.add(textPanel, BorderLayout.NORTH);
 		this.add(lowerPanel, BorderLayout.SOUTH);
-		this.setSize(new Dimension(600, icon.getIconWidth()+100));
+		//this.setSize(new Dimension(600, icon.getIconWidth()+100));
 	
 	}
 	 

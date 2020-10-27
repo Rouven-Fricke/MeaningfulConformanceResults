@@ -1,28 +1,17 @@
 package org.processmining.behavioralspaces.visualization;
 
-import javax.swing.JComponent;
-import javax.swing.JFrame;
 
-import org.apache.commons.lang3.StringUtils;
 import org.processmining.behavioralspaces.models.behavioralspace.DeviationMatrix;
 import org.processmining.behavioralspaces.models.behavioralspace.DeviationSet;
 import org.processmining.behavioralspaces.models.behavioralspace.MetricsResult;
 
-import java.awt.Component;
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Hashtable;
-import java.util.List;
 
-import com.mxgraph.swing.mxGraphComponent;
-import com.mxgraph.view.mxGraph;
-import com.mxgraph.view.mxStylesheet;
-import com.mxgraph.layout.hierarchical.mxHierarchicalLayout;
-import com.mxgraph.util.mxConstants;
+import java.util.List;
 
 
 import org.processmining.plugins.graphviz.dot.*;
@@ -38,7 +27,7 @@ public class GraphBuilder
 	private DeviationMatrix dm;
 	private DeviationSet[] ds;
 	
-	private mxGraph graph;
+	
 	private Object parent;
 	
 	//Dot format String for GraphViz
@@ -228,34 +217,7 @@ public class GraphBuilder
 	}
 	
 	
-	private void createDotGraph(String dotFormat,String fileName)
-	{
-	    GraphViz gv=new GraphViz();
-	    gv.addln(gv.start_graph());
-	    gv.add(dotFormat);
-	    gv.addln(gv.end_graph());
-	   // String type = "gif";
-	    String type = "png";
-	  // gv.increaseDpi();
-	    gv.decreaseDpi();
-	    gv.decreaseDpi();
-	    File out = new File(fileName+"."+ type);
-	    
-	    gv.writeGraphToFile(gv.getGraph(gv.getDotSource(), type), out);
-	}
-	public DotFileBuilder runGraphViz() throws IOException {
-	    createDotGraph(dotFormat, "DotGraph");
-	    //TODO dotFormat verändern zu einem validen dot format
-	    //get it in a JFrame
-	    DotFileBuilder dfb = new DotFileBuilder();
-	    return dfb.showVisualization();
-	    //return new DotFileBuilder();
-	}
 	
-	public void refreshImage() {
-		System.out.println("==================== NEW DOT STRING ==============");
-		createDotGraph(dotFormat, "DotGraphNEU");
-	}
 	
 	public Dot getDot() throws IOException{
 		if(!dotFormat.substring(0, 1).equals("di")) {
