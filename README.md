@@ -6,7 +6,8 @@ This readme doc supports the repo with some additional explanation regarding the
 
 # Files
 
-The files that were supplemented to me before the beginning of the thesis as well as the code I have produces are in the BSpaceConformanceChecking folder. Other files, like all input files (event logs, petri nets, event to activity mappings etc) are also included. 
+The files that were supplemented to me before the beginning of the thesis as well as the code I have produces are in the BSpaceConformanceChecking folder. Other files, like the input files (event logs, petri nets, event to activity mappings etc) are also included.
+In the evluation we use the file Road_Traffic_Fines_Management_Process.xes. As this is over 100mb and cannot be uploaded to GitHub, it can be found in the following link (...) and must then manually be added to the input/mwe folder.
 
 ## GraphViz
 
