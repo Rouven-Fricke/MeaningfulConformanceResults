@@ -1,0 +1,35 @@
+<ivy-module version="2.0">
+    <info organisation="prom" module="UncertainConformanceChecking" revision="latest">
+    	<description>
+    		Version VERSION
+    	</description>
+    </info>
+    <configurations>
+   		<conf name="default" extends="lib" />
+   		<conf name="lib" />
+	</configurations>  
+    <dependencies defaultconf="default">
+    	<!-- ProM dependencies. -->
+    	<!-- Please put every ProM dependency on a single line. -->
+    	<!-- ProM framework. -->
+    	<dependency org="prom" name="ProM-Plugins" rev="latest" changing="true" transitive="true" />
+    	<!-- ProM packages. -->
+    	<dependency org="prom" name="BasicUtils" rev="latest" changing="true" transitive="true" />
+    	<dependency org="prom" name="Widgets" rev="latest" changing="true" transitive="true" />
+		<dependency org="prom" name="PetriNets" rev="latest" changing="true" transitive="true" />
+		<dependency org="prom" name="Log" rev="latest" changing="true" transitive="true"/>
+		<dependency org="prom" name="AcceptingPetriNet" rev="latest" changing="true" transitive="true" />
+		<dependency org="prom" name="Alignment" rev="latest" changing="true" transitive="true" />       
+        <dependency org="prom" name="PNetReplayer" rev="latest" changing="true" transitive="true" />
+		<dependency org="prom" name="PNAnalysis" rev="latest" changing="true" transitive="true" />
+		<dependency org="prom" name="CPNet" rev="latest" changing="true" transitive="true" />
+		<dependency org="prom" name="StochasticPetriNets" rev="latest" changing="true" transitive="true" />
+		<dependency org="javax.xml.bind" name="jaxb-api" rev="2.3.0"/>
+		<dependency org="com.sun.xml.bind" name="jaxb-core" rev="2.3.0"/>
+		<dependency org="com.sun.xml.bind" name="jaxb-impl" rev="2.3.0"/>
+		<dependency org="org.simpleframework" name="simple-xml" rev="2.7.1"/>
+		<dependency org="org.jboss" name="jdk-misc" rev="2.Final"/>
+		<dependency org="org.apache.commons" name="commons-text" rev="1.9"/>
+		<dependency org="com.opencsv" name="opencsv" rev="3.7"/>
+	</dependencies>
+</ivy-module>
