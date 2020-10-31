@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<classpath>
+	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/jre1.8.0_161">
+		<attributes>
+			<attribute name="module" value="true"/>
+		</attributes>
+	</classpathentry>
+	<classpathentry kind="src" path="src"/>
+	<classpathentry exported="true" kind="lib" path="lib/lpsolve55j.jar"/>
+	<classpathentry kind="lib" path="lib/Event2ActivityMatcher.jar"/>
+	<classpathentry exported="true" kind="con" path="org.apache.ivyde.eclipse.cpcontainer.IVYDE_CONTAINER/?project=BSpaceConformanceChecking&amp;ivyXmlPath=ivy.xml&amp;confs=*&amp;ivySettingsPath=ivysettings.xml&amp;loadSettingsOnDemand=false&amp;ivyUserDir=&amp;propertyFiles="/>
+	<classpathentry exported="true" kind="lib" path="lib/JorgeMunozGamaPkg.jar"/>
+	<classpathentry kind="lib" path="C:/Users/rouma/Downloads/jgrapht-1.5.0/jgrapht-1.5.0/lib/jgrapht-io-1.5.0.jar"/>
+	<classpathentry kind="lib" path="C:/Users/rouma/Downloads/jgrapht-1.5.0/jgrapht-1.5.0/lib/jgrapht-opt-1.5.0.jar"/>
+	<classpathentry kind="lib" path="C:/Users/rouma/Downloads/jgrapht-1.5.0/jgrapht-1.5.0/lib/antlr4-runtime-4.8-1.jar"/>
+	<classpathentry kind="lib" path="C:/Users/rouma/Downloads/jgrapht-1.5.0/jgrapht-1.5.0/lib/commons-lang3-3.9.jar"/>
+	<classpathentry kind="lib" path="C:/Users/rouma/Downloads/jgrapht-1.5.0/jgrapht-1.5.0/lib/commons-text-1.8.jar"/>
+	<classpathentry kind="lib" path="C:/Users/rouma/Downloads/jgrapht-1.5.0/jgrapht-1.5.0/lib/fastutil-8.3.1.jar"/>
+	<classpathentry kind="lib" path="C:/Users/rouma/Downloads/jgrapht-1.5.0/jgrapht-1.5.0/lib/guava-28.2-jre.jar"/>
+	<classpathentry kind="lib" path="C:/Users/rouma/Downloads/jgrapht-1.5.0/jgrapht-1.5.0/lib/jgrapht-core-1.5.0.jar"/>
+	<classpathentry kind="lib" path="C:/Users/rouma/Downloads/jgrapht-1.5.0/jgrapht-1.5.0/lib/jgrapht-demo-1.5.0.jar"/>
+	<classpathentry kind="lib" path="C:/Users/rouma/Downloads/jgrapht-1.5.0/jgrapht-1.5.0/lib/jgrapht-ext-1.5.0.jar"/>
+	<classpathentry kind="lib" path="C:/Users/rouma/Downloads/jgrapht-1.5.0/jgrapht-1.5.0/lib/jgrapht-guava-1.5.0.jar"/>
+	<classpathentry kind="lib" path="C:/Users/rouma/Downloads/jgrapht-1.5.0/jgrapht-1.5.0/lib/jgraphx-4.0.5.jar"/>
+	<classpathentry kind="lib" path="C:/Users/rouma/Downloads/jgrapht-1.5.0/jgrapht-1.5.0/lib/jheaps-0.13.jar"/>
+	<classpathentry kind="output" path="bin"/>
+</classpath>
