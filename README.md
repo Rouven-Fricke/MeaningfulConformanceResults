@@ -1,7 +1,8 @@
 # Bachelor Thesis: Meaningful Conformance Checking Results
 
-This is the readme file belonging to the bachelor's thesis "Meaningful conformance checking results" by Rouven Fricke. The repository contains the necessary files to reproduce the results that are described  in the thesis.
-This readme doc supports the repo with some additional explanation regarding the code and the plugin and its usage.
+This is the readme file belonging to the bachelor's thesis "Extracting and Visualizing Meaningful Results of
+Conformance Checking" by Rouven Fricke. The repository contains the necessary files to reproduce the results that are described in the thesis.
+This readme doc supports the repo with some additional explanation regarding the code, the plugin and its usage.
 
 An additional possibility to access the project is to download it from this link:
 https://drive.google.com/drive/folders/1stAaXS4NyG-JpyRDLlk0W8jhO8Iew557?usp=sharing
