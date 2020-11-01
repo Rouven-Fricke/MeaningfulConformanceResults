@@ -3,11 +3,13 @@
 This is the readme file belonging to the bachelor's thesis "Meaningful conformance checking results" by Rouven Fricke. The repository contains the necessary files to reproduce the results that are described  in the thesis.
 This readme doc supports the repo with some additional explanation regarding the code and the plugin and its usage.
 
+An additional possibility to access the project is to download it from this link:
+https://drive.google.com/drive/folders/1stAaXS4NyG-JpyRDLlk0W8jhO8Iew557?usp=sharing
+
 
 # Files
 
-The files that were supplemented to me before the beginning of the thesis as well as the code I have produces are in the BSpaceConformanceChecking folder. Other files, like the input files (event logs, petri nets, event to activity mappings etc) are also included.
-In the evluation we use the file Road_Traffic_Fines_Management_Process.xes. As this is over 100mb and cannot be uploaded to GitHub, it can be found in the following link (...) and must then manually be added to the input/mwe folder.
+The files that were supplemented to me before the beginning of the thesis as well as the code I have produced are in the BSpaceConformanceChecking folder. Other files, like the input files (event logs, petri nets, event to activity mappings etc) are also included.
 
 ## GraphViz
 
@@ -15,7 +17,7 @@ This implementation uses Graphviz 2.28 to visualize results. A config.properties
 
 
 ## General workflow to produce a visualization.
-To start the conformance checking a caseName needs to be specified in the RouvensPlaygroundPlugin.java class. This caseName must be equal to both, the name of the .pnml petri net and the .xes log file that need to be placed in the "input/mwe" directory. If the log and petri net are used for the first time or no event to activity mapping file corresponding to the files is in the "input/etamsers" directory, the loadEtamFromSER boolean variable must be set to false to create a new mapping. Otherwise the variable can be set to true which shortens the runtime.
+To start the conformance checking a caseName needs to be specified in the RouvensPlaygroundPlugin.java class. This caseName must be equal to both, the name of the .pnml petri net and the .xes log file that are placed in the "input/mwe" directory. If the log and petri net are used for the first time or no event to activity mapping file corresponding to the files is in the "input/etamsers" directory, the loadEtamFromSER boolean variable must be set to false to create a new mapping. Otherwise the variable can be set to true which shortens the runtime.
 
 After the Prom application has loaded, one has to click the top middle button to get to the list of plugins and type in "Rouven's uncertain conformance checking testbed" and click on the green entry and then on start to begin the conformance checking. After the conformance checking and the construction of a deviation matrix as described in the thesis, the start visualization is shown. This may take a few moments. After that, the plugin is ready to use.
 
