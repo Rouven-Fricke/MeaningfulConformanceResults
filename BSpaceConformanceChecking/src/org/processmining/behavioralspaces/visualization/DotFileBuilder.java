@@ -4,7 +4,6 @@ import java.awt.BorderLayout;
 import java.awt.CardLayout;
 import java.awt.Color;
 import java.awt.Container;
-import java.awt.Dimension;
 import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -13,7 +12,6 @@ import java.awt.event.ItemListener;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
@@ -42,22 +40,14 @@ public class DotFileBuilder extends JPanel	{
 	 * 
 	 */
 	private static final long serialVersionUID = 1L;
-	//private final String filePath =  "C:\\Users\\rouma\\git\\MeaningfulConformanceResults\\BSpaceConformanceChecking\\DotGraph.png";
-	private Container c;
 	private CardLayout cardLayout;
 	public DotFileBuilder () throws IOException{
-		//c = this.getContentPane();
 		this.setLayout(new BorderLayout());
 		cardLayout = new CardLayout();
 		JPanel cardLayoutPanel = new JPanel(cardLayout);
 		
 		JPanel jp= new JPanel(new GridLayout(1,0)); 
 		jp.setBackground(Color.WHITE); 
-		//ImageIcon icon = new ImageIcon(/*filePath*/); 
-		//jp.setPreferredSize(new Dimension(icon.getIconHeight(), icon.getIconWidth()+100));
-		JLabel label = new JLabel(); 
-		//label.setIcon(icon); 
-		//jp.add(label, BorderLayout.NORTH);
 		
 		DeviationMatrix resultsMatrix = RouvensPlaygroundPlugin.getResultsMatrix();
 		DeviationSet[] allDevSets = RouvensPlaygroundPlugin.getDevSetArray();
@@ -145,14 +135,13 @@ public class DotFileBuilder extends JPanel	{
 		 }
 		
 		JButton but = new JButton("Run with specifications");
-		//textPanel.add(popUpMenu);
-		//textPanel.add(jtf);
+
 		textPanel.add(jtf2);
 		textPanel.add(jcb);
 		textPanel.add(jcbPartition);
 		textPanel.add(jcbComps);
 		textPanel.add(fieldToSpecifiyAnEdgeWeightThreshold);
-		//System.out.println(provideThresholdInterval(fieldToSpecifiyAnEdgeWeightThreshold)[0] + " " + provideThresholdInterval(fieldToSpecifiyAnEdgeWeightThreshold)[1] );
+		
 		textPanel.add(but);
 		but.addActionListener(new ActionListener()
 		{
@@ -178,17 +167,20 @@ public class DotFileBuilder extends JPanel	{
 		    Double[] intervalForMetrics = provideThresholdInterval(fieldToSpecifiyAnEdgeWeightThreshold);
 		    double lowerBound = intervalForMetrics[0];
 		    double upperBound = intervalForMetrics[1];
-		    //System.out.println(lowerBound + "   " + upperBound + " from field: " + fieldToSpecifiyAnEdgeWeightThreshold.getText());
+		    
 		    if(jcbPartition.getSelectedItem().equals("Specific Components")) {
 		    	popUpMenu.setVisible(true);
 		    }
+		    
+		    //get the settings of the specs buttons
 		    String name = (String) jcbComps.getSelectedItem(); //get the form of the partition, i.e. topN, bottomN,...
 		    // Method call String.valueOf(jcbPartition.getSelectedItem()) gets the desired type of relation among the partition, i.e. the mode
 		    String relationFormat = (String) jcb.getSelectedItem();//determines if we want to show only the graph for one component or for all components among the selected partition
 			if(specifiedComponentNames.isEmpty() || !jcbPartition.getSelectedItem().equals("Specific Components")) {
 		    	gb.filterSettings(allDevSets, resultsMatrix, start, end, String.valueOf(jcbPartition.getSelectedItem()), name, relationFormat,
 		    			lowerBound, upperBound); //calls setup() to construct dotFormat String
-			}else if(!specifiedComponentNames.isEmpty() && jcbPartition.getSelectedItem().equals("Specific Components")) {
+			}
+			else if(!specifiedComponentNames.isEmpty() && jcbPartition.getSelectedItem().equals("Specific Components")) {
 				gb.relationAmongPartition(resultsMatrix, specifiedComponentNames, lowerBound, upperBound);
 				specifiedComponentNames.clear();
 			}
@@ -199,7 +191,7 @@ public class DotFileBuilder extends JPanel	{
 				jp.removeAll();
 				
 				Dot dot = gb.getDot();
-				//Some Bug (where ?) attaches unnecessary digraph G { in front of it and } behind it? Bad fix
+				//Some Bug attaches unnecessary digraph G { in front of it and } behind it? Fixes this.
 				String dotString = dot.toString();
 				while(dotString.contains("digraph G {")) {
 					dotString = StringUtils.remove(dotString, "digraph G {concentrate=true");
@@ -212,15 +204,10 @@ public class DotFileBuilder extends JPanel	{
 				jp.revalidate();
 				jp.repaint();
 			} catch (IOException e1) {
-				// TODO Auto-generated catch block
 				e1.printStackTrace();
 			}
 			
 			
-			//jp.add(label, BorderLayout.NORTH);
-			//c.add(jp, BorderLayout.CENTER);
-			
-			//jp.add(dp);
 			revalidate();
             repaint();
             setVisible(true);
@@ -229,6 +216,8 @@ public class DotFileBuilder extends JPanel	{
 		popUpMenu.setVisible(false);
 		jp.revalidate();
 		
+		
+		//construct the little text boxes with html
 		JPanel lowerPanel = new JPanel();
 		String maxNoOfComps = String.valueOf(componentsInPartition.size());
 		JTextPane explanationPane = new JTextPane();
@@ -334,8 +323,7 @@ public class DotFileBuilder extends JPanel	{
 		hierarchyScroller.getViewport().add(hierarchyPane);
 		
 		
-		//computeMatrixMeasure change return type to string
-		//make another pane with the measures either next to the other or in another card layout.
+
 		JTextPane measuresPane = new JTextPane();
 		measuresPane.setContentType("text/html");
 		measuresPane.setEditable(false);
@@ -359,7 +347,6 @@ public class DotFileBuilder extends JPanel	{
 				+ "<body>"
 				+ "<div class=\"boxed\">"
 				+ stringFormattedForHTML
-				/*resultsMatrix.getVisualRepresentationOfMatrix()*/
 				+"</div>"
 				+ "</body>"
 				+ "</html>");
@@ -370,7 +357,7 @@ public class DotFileBuilder extends JPanel	{
 		scroller.setVerticalScrollBarPolicy(ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS);
 	    scroller.setViewportView(measuresPane);
 	    scroller.getViewport().add(measuresPane);
-	    //measuresPane.setScrollableWidth(scroller.ScrollableSizeHint.FIT );
+
 		metricsPanel.add(scroller);
 		metricsPanel.add(hierarchyScroller);
 		cardLayoutPanel.add(metricsPanel, "Metrics Card");
@@ -380,38 +367,13 @@ public class DotFileBuilder extends JPanel	{
 		 * New card for the deviation Matrix
 		 * ==========================
 		 */
-		/*JPanel deviationMatrixPanel = new JPanel();
-		JTextPane deviationMatrixPane = new JTextPane();
-		String devString = resultsMatrix.getVisualRepresentationOfMatrix();
-		deviationMatrixPane.setContentType("text/html");
-		deviationMatrixPane.setEditable(false);
-		deviationMatrixPane.setBackground(new Color(224,224,224));
-		deviationMatrixPane.setText(devString);
-		deviationMatrixPanel.add(deviationMatrixPane);
-		
-		
-		JScrollPane devScroller = new JScrollPane();
-		devScroller.add(deviationMatrixPane);
-		//devScroller.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_ALWAYS);
-		devScroller.setVerticalScrollBarPolicy(ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS);
-		//devScroller.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_ALWAYS);
-		devScroller.setViewportView(deviationMatrixPane);
-		devScroller.getViewport().add(deviationMatrixPane);
-	    //deviationMatrixPane.setScrollableWidth(devScroller.ScrollableSizeHint.FIT );
-		deviationMatrixPanel.add(devScroller);
-		deviationMatrixPanel.setVisible(true);
-		cardLayoutPanel.add(deviationMatrixPanel, "Deviation Matrix Card");*/
 		
 		JPanel devPanel = new JPanel(new GridLayout(0,1));
 		JTextPane devPane = new JTextPane();
 		devPane.setContentType("text/html");
 		devPane.setEditable(false);
 		devPane.setBackground(new Color(224,224,224));
-		//List<String> measuresList = resultsMatrix.computeMatrixMeasures(allDevSets);
-		//7String stringFormattedForHTML = "";
-		//for(String str : measuresList) {
-			//stringFormattedForHTML += str + "<br/>";
-		//}
+		
 		devPane.setText("<html> "
 				+ "<head>"
 				+ "<style>"
@@ -433,7 +395,6 @@ public class DotFileBuilder extends JPanel	{
 				+ "<body>"
 				+ "<div class=\"boxed\">"
 				+ resultsMatrix.getVisualRepresentationOfMatrix()
-				/*resultsMatrix.getVisualRepresentationOfMatrix()*/
 				+"</div>"
 				+ "</body>"
 				+ "</html>");
@@ -444,12 +405,15 @@ public class DotFileBuilder extends JPanel	{
 		devScroller.setVerticalScrollBarPolicy(ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS);
 		devScroller.setViewportView(devPane);
 		devScroller.getViewport().add(devPane);
-	    //measuresPane.setScrollableWidth(scroller.ScrollableSizeHint.FIT );
 		devPanel.add(devScroller);
 		cardLayoutPanel.add(devPanel, "Deviation Matrix Card");
 		
 		
-		
+		//
+		//
+		// adds all together
+		//
+		//
 		
 		JButton switchViewsButton = new JButton();
 		switchViewsButton.setText("Switch to Metrics");
@@ -473,11 +437,10 @@ public class DotFileBuilder extends JPanel	{
 		lowerPanel.add(jtp);
 		lowerPanel.add(switchViewsButton);
 		
-		//exchange with c. ...
+
 		this.add(cardLayoutPanel, BorderLayout.CENTER);
 		this.add(textPanel, BorderLayout.NORTH);
 		this.add(lowerPanel, BorderLayout.SOUTH);
-		//this.setSize(new Dimension(600, icon.getIconWidth()+100));
 	
 	}
 	 

@@ -58,6 +58,7 @@ public class DeviationMatrix {
         }
     }
     
+    //for the third view in the plugin. Already attach some markup.
     public String getVisualRepresentationOfMatrix() {
     	StringBuilder builder = new StringBuilder();
     	builder.append("<table style=\"width:100%\">");
@@ -65,33 +66,21 @@ public class DeviationMatrix {
     		 builder.append("<tr>");
              for (int j = 0; j < N; j++) { 
                  
-             	//System.out.print(String.format("%1$4s", data[i][j])); used only for integer
-             	//builder.append(String.format("%1$4s", data[i][j]) + "<br/>");
             	 if(i == 0) {
-             		//System.out.print(StringUtils.leftPad(data[i][j], 30));
-            		 builder.append("<th>");
+            		builder.append("<th>");
              		builder.append(data[i][j]);
              		builder.append("</th>");
-             		int length = 40 - data[i][j].length();
-             		System.out.println("Data[i][j]: " + data[i][j] + " length: "+ data[i][j].length()+ "40 - length = " + length );
-             		/*for(int count = 0; count < 40 - data[i][j].length()*2; count++) {
-             			builder.append("&#160;");
-             		}*/
+             		
+
              	}
              	else {
-             		//System.out.print(StringUtils.leftPad(data[i][j], 30));
              		builder.append("<td>");
              		builder.append(data[i][j]);
              		builder.append("</td>");
-             		int length = 40 - data[i][j].length();
-             		System.out.println("Data[i][j]: " + data[i][j] + " length: "+ data[i][j].length() + "40 - length = " + length );
-             		/*for(int count = 0; count < 40 - data[i][j-1].length()*2; count++) {
-                 		builder.append("&#160;");
-             		}*/
+             		
              	}
              }
              builder.append("</tr>");
-             //builder.append("<br/>");
          
     	 }
     	builder.append("</table>");
@@ -110,7 +99,6 @@ public class DeviationMatrix {
     
     	for(int i = 1; i<=compNames.length; i++) {
     		compNames[i-1] = this.data[i][0];
-    		//System.out.println(compNames[i-1] + ", ");
     	}
     	//label the rows and columns
     	resMatrix.data[0][0] = "Components";
@@ -121,7 +109,7 @@ public class DeviationMatrix {
     		ithComp++;
     	}
     	
-    	//System.out.println(M + " " + N + " compnames " + compNames.length);
+
     	for(int i = 1; i<this.N; i++) {
     		for(int j = 1; j< this.N; j++) {
     			int sum = Integer.parseInt(firstMatrix[i][j]) + Integer.parseInt(secondMatrix[i][j]);
@@ -163,7 +151,7 @@ public class DeviationMatrix {
 		 for(Map.Entry<String, Integer> entry : sortedMap.entrySet()) {
 			 List<String> guaranteedCoOccurrences = new ArrayList<String>();
 			 List<String> exclusiveness = new ArrayList<String>();
-			 double totalDevs = entry.getValue();//teilweise falsch????
+
 			 for(int i = 1; i< matrixEntries.length; i++) {
 				 if(matrixEntries[i][0].equals(entry.getKey())) {//only for the respective row of the matrix
 					 //get max
@@ -232,9 +220,7 @@ public class DeviationMatrix {
   	 sorted.putAll(map); 
 
   	 // Display the TreeMap which is naturally sorted 
-  	 /*for (Map.Entry<String, Integer> entry : sorted.entrySet())  
-  	     System.out.println("Key = " + entry.getKey() +  
-  	                  ", Value = " + entry.getValue()); */ 
+
   	 return sorted;
   	}
   	
@@ -258,11 +244,7 @@ public class DeviationMatrix {
 		//second: get the occurrences of the individual non-conf comps.
 		LinkedHashMap<String, Integer> mapToSort = new LinkedHashMap<String,Integer>();//ensure the order remains alphabetic over time
 		 for (Map.Entry<String, Integer> val : sortedMap.entrySet()) {//loop through by alphabet
-			//int totalDevsOfComp = val.getValue();
-			//mapToSort.put(val.getKey(), totalDevsOfComp); //Component and how often it deviates in total 
-			 
-			//alternatively get the max by running over matrix Entries
-			//System.out.println(val.getKey() + "  ---------------  " + val.getValue());
+			
 			String[][] matrix = this.getMatrixEntries();
 			for(int i = 1;i< matrix.length; i++) {
 				if(matrix[i][0].equals(val.getKey())) { //only go into the correct column

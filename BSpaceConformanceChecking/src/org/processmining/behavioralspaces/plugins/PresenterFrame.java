@@ -11,8 +11,7 @@ import org.processmining.framework.plugin.PluginContext;
 import org.processmining.framework.plugin.annotations.Plugin;
 import org.processmining.framework.plugin.annotations.PluginLevel;
 import org.processmining.framework.plugin.annotations.PluginVariant;
-import org.processmining.plugins.graphviz.dot.Dot;
-import org.processmining.plugins.graphviz.visualisation.DotPanel;
+
 
 //@Plugin(name = "Dot visualisation", returnLabels = { "Dot visualisation" }, returnTypes = { JComponent.class }, parameterLabels = { "Dot" }, userAccessible = true, level = PluginLevel.Regular)
 public class PresenterFrame {

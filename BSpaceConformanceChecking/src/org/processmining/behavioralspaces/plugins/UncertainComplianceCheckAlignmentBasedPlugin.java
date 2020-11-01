@@ -111,7 +111,6 @@ public class UncertainComplianceCheckAlignmentBasedPlugin {
 		classes = logInfo.getEventClasses();
 
 		boolean loadEtamFromSER = true;
-		//etams = EventToActivityMapper.obtainEtams(context, SER_FOLDER, net, log, RECOMPUTE_ETAMS, AlignmentBasedCheckingBenchmarkPlugin.MAX_MAPPING_TIME);
 		EventActivityMappings etams = EventToActivityMapper.obtainEtams(context, "input/etamsers/", net, log, loadEtamFromSER, EvaluationPlugin.MAX_MAPPING_TIME);		
 		exec(context, net, log, etams, false);
 		
@@ -227,7 +226,7 @@ public class UncertainComplianceCheckAlignmentBasedPlugin {
 		System.out.println(decomposition.getConformableNodesNames());
 		System.out.println("mode: " + mode);
 		System.out.println("check once: " + unambiguousComponents.toString());
-		System.out.println("repeat check: " + ambiguousComponents.toString());//why only one ambiguous component?
+		System.out.println("repeat check: " + ambiguousComponents.toString());
 		
 		
 		
@@ -244,16 +243,14 @@ public class UncertainComplianceCheckAlignmentBasedPlugin {
 		
 
 		TraceToBSpaceTranslator translator = new TraceToBSpaceTranslator(etams);
-		
-		ArrayList<XTrace> traceList = RouvensPlaygroundPlugin.getUsedTraces(); 
+
+		//get the sampled traces
 		ArrayList<Integer> traceNumberList = RouvensPlaygroundPlugin.getTraceNumbers();
 
 
 		for(int i = 0; i < traceNumberList.size(); i++) {
 		//for(XTrace trace : traceList) {
 		//for (int  i= 0; i<log.size();i+=500) {
-		//int i  = 0;
-		//for(XTrace t : log) {
 			
 			TraceBSpace tbs = translator.translateToBSpace(log.get(i));
 			//TraceBSpace tbs = translator.translateToBSpace(trace);	
@@ -333,8 +330,7 @@ public class UncertainComplianceCheckAlignmentBasedPlugin {
 			ConformanceKit kit; //Conformance for only the relevant component components.getComponent(compName)??
 				try {
 				kit = new ConformanceKit(components.getComponent(compName), iniM, finalM, tempLog, transEventMap, classifierMap);
-				} catch (NullPointerException e) {//nur bei NullPointerException
-					System.out.println("NULLPOINTER EXCEPTION--------------------------------------------");
+				} catch (NullPointerException e) {
 					for (XTraceTranslation tt : bspace.getTranslations()) {
 						tt.setComponentCompliance(compName, true);
 					}
@@ -353,8 +349,6 @@ public class UncertainComplianceCheckAlignmentBasedPlugin {
 				parameters.setFinalMarkings(new Marking[] {kit.getEndM()});
 				parameters.setMaxNumOfStates(50);
 				
-//				parameters.setNumThreads(numThreads);
-				
 //für jede UnambigComponent check compliance on the first translation of a trace. Assign compliance value to all
 //translation of the trace, as it is unambiguous. Then, check for next unambigComp.				
 			
@@ -365,7 +359,6 @@ public class UncertainComplianceCheckAlignmentBasedPlugin {
 					double fit = (Double) res.getInfo().get(PNRepResult.TRACEFITNESS);//Fitness of the first translation of a trace
 					compl = (fit >= 1.0);
 					if(fit < 1) {
-						//System.out.println(res.getInfo().get(PNRepResult.TRACEFITNESS) + " " + compName + " " + components.getComponent(compName).getTrans() + " " + compl);
 						if(!listU.contains(compName)) {
 							listU.add(compName);//we only store the unique unambiguous comps in this list.
 						}
@@ -385,22 +378,9 @@ public class UncertainComplianceCheckAlignmentBasedPlugin {
 
 			int uTransNo = 0;
 			for (XTraceTranslation tt : bspace.getTranslations()) { //set the compliance of all translations according to the
-			//first one as it is an unambiguous component.
-			//XTraceTranslation tt = bspace.getTranslations().iterator().next();	
-				/*if(this.traceNumber == 5500 && uTransNo == 1) {
-					System.out.print("Unambig: Trace No. " + this.traceNumber + ", ");
-					
-				}*/
-					for(int l = 0;l<tt.getMapping().size();l++) {
-						//System.out.println(l + ". Mapping EventList: " + tt.getMapping().get(l) + " - " + tt.getMapping().getActivities());
-					}
-					
-				
-				
 			
 				tt.setComponentCompliance(compName, compl);
 				if(!compl) {
-					boolean unambigCompIsNonCompl = true;
 					unambigComps++;
 					if(uTransNo == 0 && this.traceNumber == 5500) {//only print once, as its the same for all transl.
 						System.out.println("Unambig: Trace No. "+ traceNumber + ", CompName: " + compName + " Compl: " + compl);
@@ -431,7 +411,6 @@ public class UncertainComplianceCheckAlignmentBasedPlugin {
 		
 		//ambiguous Components
 		for (String compName : ambiguousComponents) {
-			//System.out.println("GRÖßE:" + ambiguousComponents.size() +"Ambig. CompName: " + compName);
 			for (XTraceTranslation tt : bspace.getTranslations()) {
 				tt.setComponentCompliance(compName, true);
 			}
@@ -484,7 +463,7 @@ public class UncertainComplianceCheckAlignmentBasedPlugin {
 
 						PNRepResult res = replayer.replayLog(context, kit.getNet(), kit.getLog(), newMap, replayerWithoutILP, parameters);
 						if (!res.isEmpty()) {
-							double fit = (Double) res.getInfo().get(PNRepResult.TRACEFITNESS);//was anderes als TRACEFITNESS? MOVELOG; MODEK?
+							double fit = (Double) res.getInfo().get(PNRepResult.TRACEFITNESS);
 							compl = (fit >= 1.0);
 							if(fit < 1) {
 								if(!listA.contains(compName)) {
@@ -496,15 +475,13 @@ public class UncertainComplianceCheckAlignmentBasedPlugin {
 								}
 							}
 							
-							/*for(Map.Entry<String, Object> info : res.getInfo().entrySet()) {
-								System.out.println("STring: " + info.getKey() + " Obj: " + info.getValue());
-							}*/
 						}
 						tt.setComponentCompliance(compName, compl);
 						
+						//just for testing purposes, no further use, 5500 arbitrarily chosen
 						if(this.traceNumber == 5500) {
 							System.out.print("Ambig: Trace No. " + this.traceNumber + "Translation No. " + aTransNo + ", ");
-							for(XEvent e : tt.getOriginal()) {//getOriginal always gives the same trace?
+							for(XEvent e : tt.getOriginal()) {
 								System.out.print(classes.getClassOf(e)+ ", ");	
 							}
 							System.out.println();
@@ -537,7 +514,6 @@ public class UncertainComplianceCheckAlignmentBasedPlugin {
 						}
 						
 					} catch (AStarException e) {
-						// TODO Auto-generated catch block
 						e.printStackTrace();
 					} catch (NullPointerException e) {
 						
@@ -545,14 +521,10 @@ public class UncertainComplianceCheckAlignmentBasedPlugin {
 				}
 				aTransNo++;
 			}
-			//System.out.println("Total translations: " + bspace.getTranslations().size());
 			this.allAmbig.put(this.traceNumber, aHashMapList);
 			this.devSet.put(this.traceNumber, aHashMapList);
 		}
 		devList.add(allAmbig);
-		//System.out.println(unambigComps + "Unambig non-compliant components");
-	
-		
 		return true;
 	}
 
@@ -563,7 +535,6 @@ public void printUnambiguousNonCompliantComps() {
 		for(int i = 0;i< traceLevelUnambigNonComp.size();i++) {
 			boolean onlyFirstTranslation = true;
 			for(Map.Entry<Integer, String> translationEntry : traceLevelUnambigNonComp.get(i).entrySet()) {
-				int translationNo = translationEntry.getKey();
 				String comp = translationEntry.getValue();
 				if(onlyFirstTranslation) {
 					System.out.println("TraceNo: " + traceNo + " Non compliant Unambig Comp: " + comp + "-> " + components.getComponent(comp).getTrans());
@@ -578,7 +549,6 @@ public void printAmbiguousNonCompliantComps() {
 		int traceNo = ambigNonComp.getKey();
 		List<HashMap<Integer, String>> traceLevelAmbigNonComp = ambigNonComp.getValue();
 		for(int i = 0;i<traceLevelAmbigNonComp.size();i++) {
-			boolean onlyFirstTranslation = true;
 			for(Map.Entry<Integer, String> translationEntry : traceLevelAmbigNonComp.get(i).entrySet()) {
 				int translationNo = translationEntry.getKey();
 				String comp = translationEntry.getValue();
@@ -606,7 +576,8 @@ public void printDeviationSets() {
 }
 
 //use this method to get the dev comps of a specific trace
-private List<String> getDeviatingCompsOfTrace(int traceNo) {
+//not needed anymore, could be changed
+/*private List<String> getDeviatingCompsOfTrace(int traceNo) {
 	List<String> deviatingComps = new ArrayList<String>();
 	for(HashMap<Integer, List<HashMap<Integer, String>>> devSet : devList) {
 		for(Map.Entry<Integer, List<HashMap<Integer, String>>> entry : devSet.entrySet()) {
@@ -614,7 +585,6 @@ private List<String> getDeviatingCompsOfTrace(int traceNo) {
 			if(traceNo == traceNumber) {
 				for(HashMap<Integer, String> translList : entry.getValue()) {
 					for(Map.Entry<Integer, String> translResult : translList.entrySet()) {
-						int translation = translResult.getKey();
 						String deviationName =  translResult.getValue();
 						//System.out.println("Trace No. " + traceNo + " Translation No. " + translation + " Deviating Component: " + deviationName);
 						if(!deviatingComps.contains(deviationName)) {
@@ -628,7 +598,7 @@ private List<String> getDeviatingCompsOfTrace(int traceNo) {
 	}
 	//System.out.println("Deviating Comps for Trace: " + traceNo + ": " + deviatingComps);
 	return deviatingComps;
-}
+}*/
 
 //constructs a deviation Matrix over the full set of deviating components and orders them lexicographically 
 public DeviationMatrix constructDeviationMatrix(DeviationSet[] ds, int traceNo) {
@@ -640,7 +610,7 @@ public DeviationMatrix constructDeviationMatrix(DeviationSet[] ds, int traceNo) 
 	//String[][] matrixEntries =  new String[getDeviatingCompsOfTrace(traceNo).size()+1][getDeviatingCompsOfTrace(traceNo).size()+1];
 	String[][] matrixEntries = new String[deviatingComps.size()+1][deviatingComps.size()+1];
 	matrixEntries[0][0] = "Components";
-	boolean topRowFilled = false; //used to label the columns with the component names.
+	
 	
 	int ithComp = 1;
 	int jthComp = 1;
@@ -659,26 +629,20 @@ public DeviationMatrix constructDeviationMatrix(DeviationSet[] ds, int traceNo) 
 		//save the co-occurring deviating comps and their frequency of occurrence.
 		// hashmap to store the frequency of element 
 		for(DeviationSet devSet : ds) {
-			//devSet.getNumberedCoOccurrences(singleComponent, hm);
 			getNumberedCoOccurrences2(singleComponent, hm, devSet);
 		}
-		//System.out.print("Element " + singleComponent + " co-occurs: ");
+		
 		jthComp = 1;
-		//matrixEntries[ithComp][0] = singleComponent;
-		int counter = 1;
 		TreeMap<String, Integer> sortedMap = sortbykey(hm); //sort both lists lexicographically to have a 0-diagonal matrix.
 		System.out.print(" " + sortedMap.size() + " ");
-		if(sortedMap.size() == 0) {//Zeile und Spalte mit Nullen füllen
+		if(sortedMap.size() == 0) {//fill rows and columns with zero
 			for(int j = 1; j<deviatingComps.size() + 1; j++) {
 				matrixEntries[ithComp][j] = "0";//Row
 				matrixEntries[j][deviatingComps.indexOf(singleComponent)+1] = "0";//Column
 			}
 		}
-		for(Map.Entry<String, Integer> val : sortedMap.entrySet()) {//das geht so nicht mehr, müssen alle Components in die Sorted Map nehmen; beachtet die Comps mit 0 nicht
-		//for (Map.Entry<String, Integer> val : hm.entrySet()) {
+		for(Map.Entry<String, Integer> val : sortedMap.entrySet()) {
 			
-			//plus also fill the deviation matrix
-			//System.out.print(val.getValue() + " times with " + val.getKey() + ", ");
 			//fill matrix
 			if(matrixEntries[ithComp][jthComp] == null) {//nur wenn es vorher noch nicht mit 0 befüllt wurde
 				matrixEntries[ithComp][jthComp] = Integer.toString(val.getValue());
@@ -691,7 +655,6 @@ public DeviationMatrix constructDeviationMatrix(DeviationSet[] ds, int traceNo) 
 			}
 			
 			jthComp++;
-			counter++;
 		}
 		
 		System.out.println();
@@ -716,47 +679,7 @@ public DeviationMatrix createInitialMatrix() {
 		allComps.add(str.getName());
 		Collections.sort(allComps);
 	}
-	/*List<Set<Transition>> transitionList = new ArrayList<Set<Transition>>();
-	for(DCComponent comp1 : getUniqueDCComps()) {
-		Set<Transition> transition = comp1.getTrans();
-		if(!transitionList.contains(comp1.getTrans())) {
-			transitionList.add(transition);
-		}
-	}
-	Collections.sort(allComps);//alphabetic order.
-	//determine the size of the matrix
-	int size = 0;
-	for(Set<Transition> trans: transitionList) {
-		if(trans.size() < 5) {//only consider the components that inlcude a reasonable amount of transitions
-			size++;
-		}
-	}
-	String[][] matrixEntries = new String[size+1][size+1];
-	matrixEntries[0][0] = "Components";
-	
-	int ithComp = 1;
-	int jthComp = 1;
-	//vertically fill in the first column with the Comp Names
-	//horizontally fill in the first row with the Comp Names
-	for(Set<Transition> trans: transitionList) {
-		if(trans.size() < 5) {//only consider the components that inlcude a reasonable amount of transitions
-			matrixEntries[ithComp][0] = trans.toString();
-			matrixEntries[0][jthComp] = trans.toString();
-			jthComp++;
-			ithComp++;
-		}
-	}
-	
-	//initialize the rest of the Matrix with 0-Strings(!)
-	//cast to int and back during adding ofc.
-	for(int i = 1; i <= size; i++) {
-		for(int j = 1; j<= size;j++) {
-			matrixEntries[i][j] = "0";
-			System.out.print(matrixEntries[i][j]);
-		}
-		System.out.println();
-	}
-	*/
+
 	//initialize the matrix with the correct size
 	String[][] matrixEntries = new String[allComps.size()+1][allComps.size()+1];
 	matrixEntries[0][0] = "Components";
@@ -789,7 +712,7 @@ public DeviationMatrix createInitialMatrix() {
 
 
 //maybe two methods, construct devset and getDevSet... and call construct() from getter.
-//morgen sofort dann das DeviationSet befüllen.
+
 public DeviationSet getSingleDevSet(int traceNo, int translationNo) {
 	List<String> deviatingCompNames = new ArrayList<String>();
 	double probability = 0.0;
@@ -814,11 +737,7 @@ public DeviationSet getSingleDevSet(int traceNo, int translationNo) {
 		
 		
 	}
-	//Besser handeln!!
-	/*if(deviatingCompNames.size() == 0) {
-		//System.out.println("no deviating comp for this trace translation");
-		deviatingCompNames.add("No deviating comp for this trace"); 
-	}*/
+	
 	double etamsSize = etams.size(); 
 	probability = (1.0 / etamsSize);
 	return new DeviationSet(deviatingCompNames, traceNo, translationNo, probability);//gets called with toString() methods in RouvensPlugin
@@ -837,12 +756,7 @@ public List<String> getUniqueUnambigComps(){
 }
 
 public List<DCComponent> getUniqueDCComps() {
-	/*for(DCComponent dc : listCompU) {
-		System.out.println(dc.getName() + " -> " + dc.getTrans());
-	}
-	for(DCComponent dc : listCompA) {
-		System.out.println(dc.getName() + " -> " +dc.getTrans());
-	}*/
+	
 	List<DCComponent> list = new ArrayList<DCComponent>();
 	list.addAll(listCompA);
 	list.addAll(listCompU);
@@ -856,19 +770,6 @@ public List<String> getAllNonConfComps(){
 	list.addAll(listU);
 	return list;
 }
-	
-	
-	
-private Set<String> getChildComponents(DCDecomposition decomp, String compName, Set<String> names) {
-	for (DCDecompositionNode child : decomp.getNode(compName).getChildren()) {
-		names.add(child.getName());
-		if (!child.getChildren().isEmpty()) {
-			names.addAll(getChildComponents(decomp, child.getName(), new HashSet<String>()));
-		}
-	}
-	return names;
-}
-
 
 //Function to sort map by Key 
 private TreeMap<String, Integer> sortbykey(Map<String, Integer> map) { 
@@ -878,10 +779,7 @@ private TreeMap<String, Integer> sortbykey(Map<String, Integer> map) {
  // Copy all data from hashMap into TreeMap 
  sorted.putAll(map); 
 
- // Display the TreeMap which is naturally sorted 
- /*for (Map.Entry<String, Integer> entry : sorted.entrySet())  
-     System.out.println("Key = " + entry.getKey() +  
-                  ", Value = " + entry.getValue());    */     
+ 
  return sorted;
 } 
 
@@ -896,7 +794,6 @@ private Map<String, Integer> getNumberedCoOccurrences2(String originalComp, Map<
 			}
 		}
 	}
-	//hier noch was einfügen??? Dürfen nicht nur über this.getDevList gehen sondern müssen über alle non-compl comps gehen.
 	List<String> allComps = this.getAllNonConfComps();
 	for(String str : allComps) {
 		if(!hm.containsKey(str)) {

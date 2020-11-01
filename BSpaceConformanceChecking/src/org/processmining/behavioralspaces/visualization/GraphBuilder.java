@@ -6,17 +6,13 @@ import org.processmining.behavioralspaces.models.behavioralspace.DeviationSet;
 import org.processmining.behavioralspaces.models.behavioralspace.MetricsResult;
 
 import java.io.ByteArrayInputStream;
-import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 
 import java.util.List;
 
-
 import org.processmining.plugins.graphviz.dot.*;
-import org.processmining.plugins.graphviz.visualisation.DotVisualisation;
-
 
 public class GraphBuilder 
 {
@@ -28,15 +24,12 @@ public class GraphBuilder
 	private DeviationSet[] ds;
 	
 	
-	private Object parent;
-	
 	//Dot format String for GraphViz
 	private String dotFormat = "";
 	
 	public GraphBuilder(DeviationMatrix dm){
 		//super("Deviation Graph");
 		this.dm = dm;
-        //setup(dm);
     }
 	
 	
@@ -46,9 +39,8 @@ public class GraphBuilder
 			double lowerBound, double upperBound) {
 		//config();
 		this.ds = ds;
-		//List<MetricsResult> list = DeviationSet.buildHierarchy(ds);//we just call this method to get a list of all unique comps
+
 		List<String> partition = new ArrayList<String>();
-		//for(int i = list.size()-topN; i<list.size();i++) {
 		System.out.println("Mode: " + mode);
 		switch(mode) {
 			case "TopN":
@@ -102,7 +94,7 @@ public class GraphBuilder
 		return partition;
 	}
 	
-	//needed? yes!
+
 	public List<String> specifiedComps(List<String> compNames){
 		return compNames;
 	}
@@ -110,14 +102,12 @@ public class GraphBuilder
 	
 	
 	public void singleCompToPartition(DeviationMatrix dm, List<String> partition, String nthComp, double lowerBound, double upperBound) {
-		//config();
 		String[][] entries = dm.getMatrixEntries();
 		StringBuilder str = new StringBuilder();
         try{     
             for(int i = 1; i<entries.length; i++) {
-            	//if( entries[i][0] == partition.get(nthComp)) {
             	if(entries[i][0].equals(nthComp)){
-            		//if(partition.contains(entries[i][0])) {
+
             		for(int j = 1; j< entries.length; j++) {
             			if(partition.contains(entries[0][j])) {
             			double edgeWeight  = Integer.parseInt(entries[i][j]);
@@ -146,10 +136,9 @@ public class GraphBuilder
            				if(adjustedEdgeWeight == 1.0) {
            					color = " edge [color = black];";
            				}
-           				//graph.insertEdge(parent, null, adjustedEdgeWeight, v1, v2);
+
            				if(edgeWeightInInterval(adjustedEdgeWeight,lowerBound, upperBound)) {
-           					str.append( color + preprocess(entries[i][0]) + "->" + preprocess(entries[0][j]) + "\n"
-               						/*+ "[label = " + adjustedEdgeWeight + "]"*/);
+           					str.append( color + preprocess(entries[i][0]) + "->" + preprocess(entries[0][j]) + "\n");
            				}
 
             			}
@@ -164,14 +153,12 @@ public class GraphBuilder
 	}
 	
 	public void relationAmongPartition(DeviationMatrix dm, List<String> partition, double lowerBound, double upperBound) {
-		//config();
 		String[][] entries = dm.getMatrixEntries();
 		StringBuilder str = new StringBuilder();
         try{     
             for(int i = 1; i<entries.length; i++) {
             	if(partition.contains(entries[i][0])) {
-            	//if(entries[i][0].equals(nthComp)){
-            		//if(partition.contains(entries[i][0])) {
+            	
             		for(int j = 1; j< entries.length; j++) {
             			if(partition.contains(entries[0][j])) {
             			double edgeWeight  = Integer.parseInt(entries[i][j]);
@@ -200,10 +187,10 @@ public class GraphBuilder
            				if(adjustedEdgeWeight == 1.0) {
            					color = " edge [color = black];";
            				}
-           				//graph.insertEdge(parent, null, adjustedEdgeWeight, v1, v2);
+
            				if(edgeWeightInInterval(adjustedEdgeWeight,lowerBound, upperBound)) {
            					str.append(color + preprocess(entries[i][0]) + "->" + preprocess(entries[0][j]) + "\n"
-               						/*+ "[label = " + adjustedEdgeWeight + "]"*/);
+               						);
            				}
             			}
             			}
@@ -247,9 +234,4 @@ public class GraphBuilder
 		return false;
 	}
 	
-	//additional method to build a digraph string for graphviz
-	
-	//add the deviations of all comps that map to the same transition
-	//construct the matrix with only the unique transitions. Edge weights will be the added occurrences.
-
 }

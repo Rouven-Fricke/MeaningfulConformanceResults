@@ -97,7 +97,7 @@ public class DeviationSet {
 					hm.put(comp, 0);
 				}
 			}
-		}//hier noch was einfügen??? Dürfen nicht nur über this.getDevList gehen sondern müssen über alle non-compl comps gehen.
+		}
 		return hm;
 	}
 	
@@ -199,6 +199,10 @@ public class DeviationSet {
 		return "Deviation Set for Trace No: " + traceNo + " TranslationNo: " + translationNo + " List of deviating comps: " + deviatingCompNames
 				+ " with probability: " + probability;
 	}
+	
+	
+	//sorting and counting helper methods
+	
 	
 	//Function to sort map by Key 
 	private static TreeMap<String, Integer> sortbykey(Map<String, Integer> map) { 

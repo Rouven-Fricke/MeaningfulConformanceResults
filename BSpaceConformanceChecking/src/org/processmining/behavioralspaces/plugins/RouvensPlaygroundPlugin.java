@@ -78,7 +78,7 @@ public class RouvensPlaygroundPlugin {
 		
 		// Step 0: load a Petri net and a corresponding event log, plus initalize stuff
 		//specify the name of the log and petri net as the caseName.
-		String caseName ="Road_Traffic_Fines_Management_Process"; //"Artificial - Review - Large";//"BPI_Challenge_2012";// "bpi_challenge_2013_incidents";//"Artificial - Claims";//"BPIC15_1";//"Hospital_log";//"Artificial - Repair"; //"Artificial - Loan Process";"Artificial - Claims";//"Artificial - Claims";/"Road_Traffic_Fines_Management_Process";//
+		String caseName ="BPI_Challenge_2012";//"Artificial - Review - Large";//"Road_Traffic_Fines_Management_Process";//
 		String netPath = "input/mwe/" + caseName + ".pnml";
 		String logPath = "input/mwe/" + caseName + ".xes";
 		Petrinet net = loadPetrinet(context, netPath);
@@ -102,9 +102,10 @@ public class RouvensPlaygroundPlugin {
 		
 		// Step 1: establish the possible event-to-activity mappings (leave parameters as is for the moment)
 		boolean loadEtamFromSER = true;
+		System.out.println("vor");
 		//EventActivityMappings etams = EventToActivityMapper.obtainEtams(context, "input/etamsers/", caseName, net, log, loadEtamFromSER, EvaluationPlugin.MAX_MAPPING_TIME);
 		EventActivityMappings etams = EventToActivityMapper.obtainEtams(context, "input/etamsers/", net, log, loadEtamFromSER, EvaluationPlugin.MAX_MAPPING_TIME);		
-
+		System.out.println("hinter");
 		// Step 2: Perform conformance checks
 		
 		Default replayParameters = new ReplayerParameters.Default(2, Debug.NONE);
@@ -114,7 +115,6 @@ public class RouvensPlaygroundPlugin {
 		fitnessMap = new HashMap<>(); // store previously seen traces
 		//TraceReplayTask... pro Trace
 		traceSet = new ArrayList<XTrace>();
-		//ArrayList<Integer> traceNumberList = computeNeededTraces(context, caseName, netPath, logPath, net, acceptingNet, initMarking, finalMarking, log);
 		ArrayList<Integer> traceNumberList = computeNeededTraces(context, caseName, netPath, logPath, replayer, log, net, logAttributes);
 		for(int i : traceNumberList) {
 			System.out.println("========= TraceNo: " + i + " ==========");
@@ -125,40 +125,21 @@ public class RouvensPlaygroundPlugin {
 		compPlugin = new UncertainComplianceCheckAlignmentBasedPlugin();
 		compPlugin.exec(context, net, log);
 		
-		//get a list of all necessary devSet Arrays (Trace level) to construct matrices
+		//get a list of all necessary devSet Arrays to construct matrices
 		List<DeviationSet[]> devSetList = new ArrayList<DeviationSet[]>();
 		List<DeviationMatrix> devMatrixList = new ArrayList<DeviationMatrix>();
 		
 
 		for(int i = 0; i<traceNumberList.size();i++) {
 		//for (int i=0; i<log.size();i+=500) {
-		//while(enoughTraces == false) {
 
-			
-			//DeviationSet ds[] = getDeviationSetsOfATrace(i, etams);
 			DeviationSet ds[] = getDeviationSetsOfATrace(traceNumberList.get(i), etams);//new DeviationSet[etams.size()];
 
 			devSetList.add(ds);	//and add the deviation set for the specific trace to the list; for each trace a different dev matrix
 			DeviationMatrix matrix = compPlugin.constructDeviationMatrix(ds, traceNumberList.get(i));//create a deviation matrix with the dev sets array
-			//DeviationMatrix matrix = compPlugin.constructDeviationMatrix(ds, i);
 			devMatrixList.add(matrix);//add it to the list of deviation matrices
 			
-			// The TBS log captures all interpretations (trace translations) of trace t according to the different mappings in etams
-			//TraceBSpace tbs = translator.translateToBSpace(t);
-			/*TraceBSpace tbs = translator.translateToBSpace(log.get(traceNumberList.get(i)));
-			XLog tbsLog = tbs.translationsAsLog(log);
-			double traceFitness = 0.0;
-			for (XTrace interpretation : tbsLog) {
-				double intFit = computeTraceFitness(replayer, logAttributes, interpretation);
-				//for now just calculate traceFitness as the average fitness value per interpretation, no probabilities considered
-				traceFitness = traceFitness + intFit / (tbsLog.size());
-			}
 			
-			fitSum += traceFitness;
-			
-			traceCounter++;*/
-			
-			//i++;
 			
 		}
 		//compPlugin.printAmbiguousNonCompliantComps();
@@ -183,36 +164,25 @@ public class RouvensPlaygroundPlugin {
 				count++;
 			}
 		}
-		//add boundary values for exclusiveness in the function call?
+		//just for the command line
 		resultsMatrix.computeMatrixMeasures(allDevSets);
 		DeviationSet.createDevDistr(allDevSets);
 		DeviationSet.constructConnectivityMetric(allDevSets);
 		DeviationSet.buildHierarchy(allDevSets);
 		System.out.println("\nUnique Ambiguous non-compliant Components: "+ compPlugin.getUniqueAmbigComps());
 		System.out.println("\n Unique Unambiguous non-compliant Components: " + compPlugin.getUniqueUnambigComps());
-//		for(DCComponent dc : compPlugin.getUniqueDCComps()) {
-//			System.out.println("Component: " + dc.getName() + " Transitions: " + dc.getTrans());
-//		}
-		//System.out.println("Average trace fitness: FitSum: " + fitSum / (log.size()/traceSet.size())   + " log size " + traceCounter);
-		
-		//Das alles in DotFileBuilder machen! RouvensPlaygroundPlugin Instanz erstellen?
-		//GraphBuilder gb = new GraphBuilder(resultsMatrix);
-		//gb.runGraphViz();
-		//gb.filterSettings(allDevSets, resultsMatrix, 10, 0, "topN", resultsMatrix.getMatrixEntries()[0][1],"Single Component to the selected partition", 0.0, 1.0);
-		
+		//start the actual Prom visualization
 		PresenterFrame presenter = new PresenterFrame();
 		return presenter.visualize(context, new DotFileBuilder());
 	}
 	
-	public static ArrayList<XTrace> getUsedTraces(){
-		return traceSet;
-	}
+
 	
 	private ArrayList<Integer> computeNeededTraces(PluginContext context, String caseName, String netPath, String logPath, Replayer replayer, XLog log, Petrinet net
 			,XAttributeMap logAttributes){
 		// Step 1: establish the possible event-to-activity mappings (leave parameters as is for the moment)
 		boolean loadEtamFromSER = true;
-		//EventActivityMappings etams = EventToActivityMapper.obtainEtams(context, "input/etamsers/", caseName, net, log, loadEtamFromSER, EvaluationPlugin.MAX_MAPPING_TIME);
+
 		EventActivityMappings etams = EventToActivityMapper.obtainEtams(context, "input/etamsers/", net, log, loadEtamFromSER, EvaluationPlugin.MAX_MAPPING_TIME);		
 
 		// Step 2: Perform conformance checks
@@ -253,8 +223,8 @@ public class RouvensPlaygroundPlugin {
 			if(fitValuesList.size() > 20) {
 				for(int count = fitValuesList.size()-11; count < fitValuesList.size()-1; count++) {
 					if(Math.abs(fitValuesList.get(count) - fitValuesList.get(count + 1)) <= 0.01) {
-						System.out.print(Math.abs(fitValuesList.get(count) - fitValuesList.get(count + 1)) + " ");
-						System.out.println("Current Fitness: " + fitValuesList.get(count) + " " + fitValuesList.get(count + 1) + " " +  (Math.abs(fitValuesList.get(count) - fitValuesList.get(count + 1)) <= 0.01));
+						//System.out.print(Math.abs(fitValuesList.get(count) - fitValuesList.get(count + 1)) + " ");
+						//System.out.println("Current Fitness: " + fitValuesList.get(count) + " " + fitValuesList.get(count + 1) + " " +  (Math.abs(fitValuesList.get(count) - fitValuesList.get(count + 1)) <= 0.01));
 						enoughTraces = true;
 					}
 					else {
@@ -268,13 +238,11 @@ public class RouvensPlaygroundPlugin {
 			
 		}
 			if(log.size() < 20 && traceSet.size() == log.size()) {
-				System.out.println("JAAAAAAAAAAAAAAAAAAAAAAA");
 				enoughTraces = true;
 			}
 		}
 		
 		// Loop over traces in event log
-		System.out.println("in neuer Methode nach while");
 		System.out.println("Average trace fitness: " + fitSum / traceCounter + " " + traceCounter);
 		return traceNumberList;
 	}
@@ -304,10 +272,8 @@ public class RouvensPlaygroundPlugin {
 			fitnessMap.put(traceLabelList, fitness);
 			return fitness;
 		} catch (InterruptedException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		} catch (ExecutionException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 		return 0.0;
